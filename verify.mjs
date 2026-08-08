@@ -59,35 +59,37 @@ for (const vp of viewports) {
     `scrollWidth=${overflow.sw} clientWidth=${overflow.cw}`,
   );
 
-  // video present + correct attributes
-  const vid = await page.evaluate(() => {
-    const v = document.querySelector("video");
-    if (!v) return null;
+  // homepage-exclusive editorial sections all render
+  const homeSections = ["signature-works", "rooms-we-craft", "journey", "field-notes", "press", "begin-project"];
+  for (const id of homeSections) {
+    check(`[${vp.name}] section #${id} present`, (await page.$(`#${id}`)) !== null);
+  }
+
+  // hero uses image frames, not video
+  const frameImg = await page.evaluate(() => {
+    const img = document.querySelector(".hero-runway img");
+    if (!img) return null;
     return {
-      muted: v.muted,
-      playsInline: v.hasAttribute("playsinline"),
-      controls: v.hasAttribute("controls"),
-      preload: v.getAttribute("preload"),
-      src: v.getAttribute("src"),
-      tabIndex: v.tabIndex,
+      src: img.getAttribute("src"),
+      objectCover: img.classList.contains("object-cover"),
+      ariaHidden: img.getAttribute("aria-hidden"),
+      alt: img.getAttribute("alt"),
     };
   });
-  check(`[${vp.name}] video exists`, !!vid);
-  if (vid) {
-    check(`[${vp.name}] video muted`, vid.muted === true);
-    check(`[${vp.name}] video playsInline`, vid.playsInline);
-    check(`[${vp.name}] video has NO controls`, vid.controls === false);
-    check(`[${vp.name}] video preload=auto`, vid.preload === "auto");
-    check(`[${vp.name}] video uses /video.mp4`, vid.src.includes("/video.mp4"));
+  check(`[${vp.name}] hero frame img exists`, !!frameImg);
+  if (frameImg) {
+    check(`[${vp.name}] img src is a frame from /frames/`, frameImg.src.includes("/frames/frame-"));
+    check(`[${vp.name}] img object-cover`, frameImg.objectCover);
+    check(`[${vp.name}] img aria-hidden`, frameImg.ariaHidden === "true");
+    check(`[${vp.name}] img has empty alt`, frameImg.alt === "");
   }
 
   // scroll scrub: forward then reverse, desktop only (mobile runway differs)
   if (vp.name === "desktop") {
-    const t0 = await page.evaluate(() => {
-      const v = document.querySelector("video");
-      return v ? v.currentTime : -1;
-    });
-    // runway is 400vh tall at desktop => ~4 * innerHeight
+    const frameNum = (src) => {
+      const m = src.match(/frame-(\d{4})\.png$/);
+      return m ? parseInt(m[1], 10) : 0;
+    };
     const runwayH = await page.evaluate(() => {
       const r = document.querySelector(".hero-runway");
       return r ? r.getBoundingClientRect().height : 0;
@@ -96,26 +98,31 @@ for (const vp of viewports) {
       await page.evaluate((y) => window.scrollTo(0, y), y);
       await page.waitForTimeout(450);
       return page.evaluate(() => {
-        const v = document.querySelector("video");
-        return v ? v.currentTime : -1;
+        const img = document.querySelector(".hero-runway img");
+        return img ? img.getAttribute("src") : "";
       });
     };
-    const tFwd = await scrollTo(Math.floor(runwayH * 0.4));
-    const tFwd2 = await scrollTo(Math.floor(runwayH * 0.7));
-    const tBack = await scrollTo(60);
+    const s0 = await page.evaluate(() => {
+      const img = document.querySelector(".hero-runway img");
+      return img ? img.getAttribute("src") : "";
+    });
+    const f0 = frameNum(s0);
+    const fFwd = frameNum(await scrollTo(Math.floor(runwayH * 0.4)));
+    const fFwd2 = frameNum(await scrollTo(Math.floor(runwayH * 0.7)));
+    const fBack = frameNum(await scrollTo(60));
 
-    check(`[${vp.name}] scrub advances with scroll`, tFwd > t0 + 0.3, `t0=${t0.toFixed(2)} t@40%=${tFwd.toFixed(2)}`);
-    check(`[${vp.name}] scrub continues forward`, tFwd2 > tFwd + 0.3, `t@40%=${tFwd.toFixed(2)} t@70%=${tFwd2.toFixed(2)}`);
-    check(`[${vp.name}] scrub reverses when scrolling up`, tBack < tFwd2 - 0.3, `t@70%=${tFwd2.toFixed(2)} t@top=${tBack.toFixed(2)}`);
+    check(`[${vp.name}] scrub advances with scroll`, fFwd > f0 + 20, `frame@0=${f0} frame@40%=${fFwd}`);
+    check(`[${vp.name}] scrub continues forward`, fFwd2 > fFwd + 20, `frame@40%=${fFwd} frame@70%=${fFwd2}`);
+    check(`[${vp.name}] scrub reverses when scrolling up`, fBack < fFwd2 - 20, `frame@70%=${fFwd2} frame@top=${fBack}`);
     await page.evaluate(() => window.scrollTo(0, 0));
     await page.waitForTimeout(400);
   }
 
   // screenshots
   await page.screenshot({ path: path.join(SHOTS, `${vp.name}-hero.png`) });
-  // scroll to services for a mid-page shot
-  await page.evaluate(() => document.getElementById("services")?.scrollIntoView());
-  await page.waitForTimeout(900);
+  // services now lives on its own route — navigate there for the mid-page shot
+  await page.goto(`${BASE}/services`, { waitUntil: "load" });
+  await page.waitForTimeout(1400);
   await page.screenshot({ path: path.join(SHOTS, `${vp.name}-services.png`) });
 
   // console errors
@@ -142,11 +149,13 @@ for (const vp of viewports) {
   const vh = await page.evaluate(() => window.innerHeight);
   check("[reduced-motion] runway collapses to one viewport", Math.abs(runwayH - vh) < 4, `runway=${runwayH} vh=${vh}`);
 
-  const t = await page.evaluate(() => {
-    const v = document.querySelector("video");
-    return v ? v.currentTime : -1;
+  const src = await page.evaluate(() => {
+    const img = document.querySelector(".hero-runway img");
+    return img ? img.getAttribute("src") : "";
   });
-  check("[reduced-motion] video parked at a static mid-frame", t > 0.5 && t < 9.5, `currentTime=${t.toFixed(2)}`);
+  const midMatch = src.match(/frame-(\d{4})\.png$/);
+  const mid = midMatch ? parseInt(midMatch[1], 10) : 0;
+  check("[reduced-motion] image parked at a static mid-frame", mid > 60 && mid < 210, `frame=${mid}`);
 
   const overflow = await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth + 1);
   check("[reduced-motion] no horizontal overflow", overflow);
@@ -177,14 +186,16 @@ for (const vp of viewports) {
   check("[mobile] menu overlay opens + body scroll locked", overlayVisible);
   await page.screenshot({ path: path.join(SHOTS, "mobile-menu.png") });
 
-  // click a menu link -> closes overlay and smooth-scrolls
-  await page.locator("nav a:visible").filter({ hasText: "Philosophy" }).first().click();
-  await page.waitForTimeout(1200);
+  // click a menu link -> closes overlay and navigates to /services#process
+  await page.locator("nav a:visible").filter({ hasText: "Process" }).first().click();
+  await page.waitForTimeout(1600);
+  const url = page.url();
   const moved = await page.evaluate(() => {
-    const el = document.getElementById("philosophy");
+    const el = document.getElementById("process");
     return el ? el.getBoundingClientRect().top : -999;
   });
-  check("[mobile] menu link smooth-scrolls to section", Math.abs(moved) < 60, `philosophy.top=${moved}`);
+  check("[mobile] menu link navigates to services page", url.includes("/services"), url);
+  check("[mobile] hash lands on process section", Math.abs(moved) < 140, `process.top=${moved}`);
   check("[mobile] no console errors", errors.length === 0, errors.slice(0, 3).join(" | ") || "clean");
   await context.close();
 }
