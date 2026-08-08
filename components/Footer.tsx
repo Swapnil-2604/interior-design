@@ -1,4 +1,4 @@
-import SmoothLink from "./SmoothLink";
+import Link from "next/link";
 import { contact, nav, studio } from "@/lib/site";
 
 export default function Footer() {
@@ -24,13 +24,13 @@ export default function Footer() {
               Studio
             </span>
             {nav.map((item) => (
-              <SmoothLink
+              <Link
                 key={item.href}
                 href={item.href}
                 className="w-fit text-[13px] text-ink/70 transition-colors hover:text-ink"
               >
                 {item.label}
-              </SmoothLink>
+              </Link>
             ))}
           </nav>
 
@@ -45,13 +45,13 @@ export default function Footer() {
               {contact.email}
             </a>
             {contact.socials.map((s) => (
-              <SmoothLink
+              <a
                 key={s.label}
                 href={s.href}
                 className="w-fit text-[13px] text-ink/70 transition-colors hover:text-ink"
               >
                 {s.label}
-              </SmoothLink>
+              </a>
             ))}
           </div>
         </div>

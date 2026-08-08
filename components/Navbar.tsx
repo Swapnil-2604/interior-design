@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import Link from "next/link";
 import { gsap, usePrefersReducedMotion } from "@/lib/animations";
-import SmoothLink from "./SmoothLink";
 import { nav, studio } from "@/lib/site";
 
 export default function Navbar() {
@@ -49,33 +49,33 @@ export default function Navbar() {
 
       <header className="fixed inset-x-0 top-0 z-[60] mix-blend-difference">
         <div className="flex items-center justify-between px-6 py-5 text-paper md:px-10 md:py-6">
-          <SmoothLink
-            href="#top"
+          <Link
+            href="/"
             className="font-sans text-[13px] font-medium tracking-[0.28em] md:text-sm"
           >
             {studio.name}
-          </SmoothLink>
+          </Link>
 
           <nav className="hidden items-center gap-8 md:flex">
             {nav.map((item) => (
-              <SmoothLink
+              <Link
                 key={item.href}
                 href={item.href}
                 className="group relative text-[11px] uppercase tracking-luxe text-paper/75 transition-colors duration-300 hover:text-paper"
               >
                 {item.label}
                 <span className="absolute -bottom-1 left-0 h-px w-0 bg-paper transition-all duration-300 group-hover:w-full" />
-              </SmoothLink>
+              </Link>
             ))}
           </nav>
 
           <div className="flex items-center gap-6">
-            <SmoothLink
-              href="#contact"
+            <Link
+              href="/contact"
               className="hidden text-[11px] uppercase tracking-luxe text-paper/75 transition-colors duration-300 hover:text-paper md:inline"
             >
               Start a conversation
-            </SmoothLink>
+            </Link>
 
             <button
               type="button"
@@ -109,10 +109,10 @@ export default function Navbar() {
       >
         <nav className="flex flex-col gap-2">
           {nav.map((item, i) => (
-            <SmoothLink
+            <Link
               key={item.href}
               href={item.href}
-              onNavigate={close}
+              onClick={close}
               className="group flex items-baseline gap-4 py-3"
             >
               <span className="font-mono text-[11px] text-stone">
@@ -121,17 +121,17 @@ export default function Navbar() {
               <span className="font-serif text-4xl italic leading-none text-paper/85 transition-colors duration-300 group-hover:text-brass">
                 {item.label}
               </span>
-            </SmoothLink>
+            </Link>
           ))}
         </nav>
         <div className="flex items-end justify-between border-t border-line-light pt-6">
           <div>
             <p className="text-[11px] uppercase tracking-luxe text-stone">New business</p>
             <a
-              href="mailto:hello@atelierform.studio"
+              href="mailto:hello@lumiere-interiors.studio"
               className="mt-1 block font-serif text-lg italic text-paper"
             >
-              hello@atelierform.studio
+              hello@lumiere-interiors.studio
             </a>
           </div>
         </div>
