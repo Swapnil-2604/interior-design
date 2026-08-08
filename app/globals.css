@@ -78,6 +78,36 @@
     letter-spacing: 0.38em;
   }
 
+  /* range input for the cost calculator — hairline track, brass-less
+     monochrome thumb that echoes the site's drafting aesthetic */
+  .calc-range {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 1px;
+    background: var(--line);
+    outline: none;
+    cursor: ew-resize;
+  }
+  .calc-range::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: var(--paper);
+    border: 1px solid var(--ink);
+    cursor: ew-resize;
+  }
+  .calc-range::-moz-range-thumb {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: var(--paper);
+    border: 1px solid var(--ink);
+    cursor: ew-resize;
+  }
+
   .scroll-indicator {
     position: relative;
     width: 1px;

@@ -12,7 +12,7 @@ export default function Philosophy() {
       <div className="mx-auto w-full max-w-[1440px] px-6 md:px-10 lg:px-16">
         <Reveal as="div" y={0} duration={1}>
           <div className="flex items-center gap-5">
-            <span className="font-mono text-[11px] text-taupe">04</span>
+            <span className="font-mono text-[11px] text-taupe">05</span>
             <span className="text-[11px] uppercase tracking-luxe text-taupe">
               Philosophy
             </span>

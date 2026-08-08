@@ -1,14 +1,14 @@
 "use client";
 
+import Link from "next/link";
 import Reveal from "./Reveal";
-import SmoothLink from "./SmoothLink";
 import { services } from "@/lib/site";
 
 export default function Services() {
   return (
     <section
       id="services"
-      className="relative bg-ink py-32 text-paper md:py-44"
+      className="relative scroll-mt-24 bg-ink py-32 text-paper md:py-44"
     >
       <div className="mx-auto w-full max-w-[1440px] px-6 md:px-10 lg:px-16">
         <Reveal as="div" y={0} duration={1}>
@@ -65,15 +65,15 @@ export default function Services() {
               Scope is decided with you, never by a template. Every discipline
               below can be engaged alone or as one continuous delivery.
             </p>
-            <SmoothLink
-              href="#contact"
+            <Link
+              href="/contact"
               className="group inline-flex items-center gap-4 text-[11px] uppercase tracking-luxe text-paper/85 transition-colors hover:text-paper"
             >
               Have a project in mind
               <span className="text-brass transition-transform duration-500 group-hover:translate-x-1">
                 &#8594;
               </span>
-            </SmoothLink>
+            </Link>
           </div>
         </Reveal>
       </div>

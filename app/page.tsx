@@ -1,25 +1,23 @@
-import Navbar from "@/components/Navbar";
-import VideoScrubber from "@/components/VideoScrubber";
+import FrameScrubber from "@/components/FrameScrubber";
 import Story from "@/components/Story";
-import Services from "@/components/Services";
-import Philosophy from "@/components/Philosophy";
-import Projects from "@/components/Projects";
-import CTA from "@/components/CTA";
-import Footer from "@/components/Footer";
+import SignatureWorks from "@/components/SignatureWorks";
+import RoomsWeCraft from "@/components/RoomsWeCraft";
+import TheJourney from "@/components/TheJourney";
+import FieldNotes from "@/components/FieldNotes";
+import PressRecognition from "@/components/PressRecognition";
+import BeginProject from "@/components/BeginProject";
 
 export default function Home() {
   return (
-    <>
-      <Navbar />
-      <main className="bg-paper text-ink">
-        <VideoScrubber />
-        <Story />
-        <Services />
-        <Philosophy />
-        <Projects />
-        <CTA />
-      </main>
-      <Footer />
-    </>
+    <main className="bg-paper text-ink">
+      <FrameScrubber />
+      <Story />
+      <SignatureWorks />
+      <RoomsWeCraft />
+      <TheJourney />
+      <FieldNotes />
+      <PressRecognition />
+      <BeginProject />
+    </main>
   );
 }

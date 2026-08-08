@@ -1,11 +1,11 @@
 "use client";
 
-import { useLayoutEffect, useRef } from "react";
+import { useLayoutEffect, useRef, useState } from "react";
+import Link from "next/link";
 import { gsap, usePrefersReducedMotion } from "@/lib/animations";
 import Reveal from "./Reveal";
-import SmoothLink from "./SmoothLink";
 import { PLATES, type PlateKey } from "./plates";
-import { projects } from "@/lib/site";
+import { projectFilters, projects } from "@/lib/site";
 
 function ProjectVisual({ plate }: { plate: PlateKey }) {
   const wrapRef = useRef<HTMLDivElement>(null);
@@ -49,15 +49,21 @@ function ProjectVisual({ plate }: { plate: PlateKey }) {
 }
 
 export default function Projects() {
+  const [filter, setFilter] = useState("All");
+  const visible =
+    filter === "All"
+      ? projects
+      : projects.filter((p) => p.bhk === filter || p.type === filter);
+
   return (
     <section
       id="work"
-      className="relative bg-paper py-32 text-ink md:py-44"
+      className="relative scroll-mt-24 bg-paper py-32 text-ink md:py-44"
     >
       <div className="mx-auto w-full max-w-[1440px] px-6 md:px-10 lg:px-16">
         <Reveal as="div" y={0} duration={1}>
           <div className="flex items-center gap-5">
-            <span className="font-mono text-[11px] text-taupe">05</span>
+            <span className="font-mono text-[11px] text-taupe">07</span>
             <span className="text-[11px] uppercase tracking-luxe text-taupe">
               Selected Work
             </span>
@@ -73,14 +79,48 @@ export default function Projects() {
           </Reveal>
         </div>
 
-        <div className="mt-16 md:mt-24">
-          {projects.map((p, i) => {
-            const reversed = i % 2 === 1;
-            return (
+        {/* filters */}
+        <Reveal as="div" y={24} duration={1} start="top 94%">
+          <div className="mt-12 flex flex-wrap gap-2 md:mt-16">
+            {projectFilters.map((f) => (
+              <button
+                key={f}
+                type="button"
+                onClick={() => setFilter(f)}
+                aria-pressed={filter === f}
+                className={`border px-4 py-2 text-[10px] uppercase tracking-luxe transition-colors duration-300 ${
+                  filter === f
+                    ? "border-ink bg-ink text-paper"
+                    : "border-line text-taupe hover:border-ink/40 hover:text-ink"
+                }`}
+              >
+                {f}
+              </button>
+            ))}
+          </div>
+        </Reveal>
+
+        <div key={filter} className="mt-14 md:mt-20">
+          {visible.length === 0 ? (
+            <Reveal as="div" y={30} duration={1} start="top 92%">
+              <div className="border-y border-line py-16 text-center md:py-24">
+                <p className="font-serif text-2xl font-light italic text-ink/70 md:text-3xl">
+                  Nothing here yet.
+                </p>
+                <p className="mx-auto mt-4 max-w-sm text-sm leading-[1.8] text-taupe">
+                  We haven&rsquo;t published a project in this category —
+                  the next one might be yours.
+                </p>
+              </div>
+            </Reveal>
+          ) : (
+            visible.map((p, i) => {
+              const reversed = i % 2 === 1;
+              return (
               <article
                 key={p.n}
                 className={`relative border-t border-line py-16 md:py-24 ${
-                  i === projects.length - 1 ? "border-b" : ""
+                  i === visible.length - 1 ? "border-b" : ""
                 }`}
               >
                 <div className="grid items-center gap-10 md:grid-cols-12 md:gap-8">
@@ -143,21 +183,22 @@ export default function Projects() {
                       <p className="mt-7 max-w-sm text-[14px] leading-[1.8] text-taupe">
                         {p.desc}
                       </p>
-                      <SmoothLink
-                        href="#contact"
+                      <Link
+                        href="/contact"
                         className="group mt-7 inline-flex items-center gap-3 text-[11px] uppercase tracking-luxe text-ink/80 transition-colors hover:text-ink"
                       >
                         View case study
                         <span className="text-brass transition-transform duration-500 group-hover:translate-x-1 group-hover:-translate-y-0.5">
                           &#8599;
                         </span>
-                      </SmoothLink>
+                      </Link>
                     </Reveal>
                   </div>
                 </div>
               </article>
-            );
-          })}
+              );
+            })
+          )}
         </div>
       </div>
     </section>

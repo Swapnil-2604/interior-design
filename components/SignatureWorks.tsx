@@ -1,0 +1,121 @@
+"use client";
+
+import Link from "next/link";
+import Reveal from "./Reveal";
+import { PlateArch, PLATES } from "./plates";
+import { signatureWorks } from "@/lib/site";
+
+export default function SignatureWorks() {
+  return (
+    <section
+      id="signature-works"
+      className="relative overflow-hidden scroll-mt-24 bg-ink py-32 text-paper md:py-44"
+    >
+      {/* faint oversized elevation as editorial texture */}
+      <Reveal
+        as="div"
+        className="pointer-events-none absolute -right-24 top-40 hidden text-paper/5 lg:block"
+        y={0}
+        start="top 80%"
+        duration={1.6}
+      >
+        <PlateArch className="h-[560px] w-auto" />
+      </Reveal>
+
+      <div className="relative z-10 mx-auto w-full max-w-[1440px] px-6 md:px-10 lg:px-16">
+        <Reveal as="div" y={0} duration={1}>
+          <div className="flex items-center gap-5">
+            <span className="font-mono text-[11px] text-stone">I</span>
+            <span className="text-[11px] uppercase tracking-luxe text-stone">
+              Signature Works
+            </span>
+            <span className="h-px flex-1 bg-line-light" />
+          </div>
+        </Reveal>
+
+        <div className="mt-14 max-w-[18ch] md:mt-20">
+          <Reveal as="div" y={50} duration={1.3} start="top 88%">
+            <h2 className="font-serif text-[clamp(1.9rem,4vw,3.8rem)] font-light leading-[1.1]">
+              Three rooms we keep going back to —{" "}
+              <em className="italic text-brass">each one a signature</em>.
+            </h2>
+          </Reveal>
+        </div>
+
+        <div className="mt-12 md:mt-20">
+          {signatureWorks.map((f, i) => {
+            const reversed = i % 2 === 1;
+            const Plate = PLATES[f.plate];
+            return (
+              <Reveal
+                key={f.n}
+                as="article"
+                y={50}
+                duration={1.2}
+                delay={i * 0.05}
+                start="top 88%"
+              >
+                <div className="group relative grid items-center gap-10 border-t border-line-light py-16 md:grid-cols-12 md:gap-8 md:py-28">
+                  {/* framed drawing */}
+                  <div
+                    className={`md:col-span-7 ${
+                      reversed ? "md:col-start-6" : "md:col-start-1"
+                    }`}
+                  >
+                    <div className="border border-line-light bg-ink-2 p-4 md:p-6">
+                      <Plate className="h-[300px] w-full text-paper/80 transition-colors duration-700 group-hover:text-brass/70 sm:h-[380px] lg:h-[460px]" />
+                    </div>
+                    <p className="mt-3 font-mono text-[10px] uppercase tracking-far text-stone">
+                      Drawing {f.plate} / 1:50
+                    </p>
+                  </div>
+
+                  {/* text */}
+                  <div
+                    className={`relative md:col-span-4 ${
+                      reversed ? "md:col-start-1 md:row-start-1" : "md:col-start-9"
+                    }`}
+                  >
+                    <span
+                      aria-hidden="true"
+                      className="pointer-events-none absolute -top-16 right-0 -z-10 select-none font-mono text-[7rem] leading-none text-paper/5 md:text-[10rem]"
+                    >
+                      {f.n}
+                    </span>
+
+                    <p className="font-mono text-[10px] uppercase tracking-luxe text-stone">
+                      {f.location} · {f.year} · {f.type}
+                    </p>
+                    <h3 className="mt-4 font-serif text-[clamp(1.9rem,3.4vw,3.2rem)] font-light italic leading-[1.05] text-paper transition-colors duration-500 group-hover:text-brass">
+                      {f.title}
+                    </h3>
+                    <p className="mt-6 font-mono text-[11px] uppercase tracking-luxe text-brass">
+                      {f.note}
+                    </p>
+                    <p className="mt-5 max-w-sm text-[14px] leading-[1.8] text-stone">
+                      {f.detail}
+                    </p>
+                  </div>
+                </div>
+              </Reveal>
+            );
+          })}
+        </div>
+
+        <Reveal as="div" y={30} duration={1} start="top 95%">
+          <div className="mt-6 border-t border-line-light pt-10 md:mt-10">
+            <Link
+              href="/work"
+              className="group inline-flex items-center gap-4 text-[11px] uppercase tracking-luxe text-paper/85 transition-colors hover:text-paper"
+            >
+              View all work
+              <span className="text-brass transition-transform duration-500 group-hover:translate-x-1">
+                &#8594;
+              </span>
+            </Link>
+          </div>
+        </Reveal>
+      </div>
+    </section>
+  );
+}
