@@ -3,6 +3,7 @@
 import { useLayoutEffect, useRef, useState, useCallback } from "react";
 import { gsap, ScrollTrigger, usePrefersReducedMotion } from "@/lib/animations";
 import { studio } from "@/lib/site";
+import TextReveal from "./TextReveal";
 
 /* ── frame-sequence hero ────────────────────────────────────────────────
    Drop-in replacement for the video scrubber: 300 PNGs (frame-0001 …
@@ -12,7 +13,7 @@ import { studio } from "@/lib/site";
 
 const TOTAL_FRAMES = 300;
 const framePath = (i: number) =>
-  `/frames/frame-${String(i + 1).padStart(4, "0")}.png`;
+  `/frames/frame-${String(i + 1).padStart(4, "0")}.webp`;
 
 export default function FrameScrubber() {
   const runwayRef = useRef<HTMLDivElement>(null);
@@ -25,50 +26,115 @@ export default function FrameScrubber() {
   const cacheRef = useRef<Map<number, HTMLImageElement>>(new Map());
   const lastIdx = useRef(-1);
 
-  /* ── preload all frames in batches of 20 ─────────────────────────── */
+  /* Helper to trigger load of a single frame */
+  const loadSingleFrame = useCallback((i: number): HTMLImageElement => {
+    const existing = cacheRef.current.get(i);
+    if (existing) return existing;
+
+    const img = new Image();
+    img.src = framePath(i);
+    img.onload = () => {
+      if (lastIdx.current === i && imgRef.current) {
+        imgRef.current.src = img.src;
+      }
+    };
+    cacheRef.current.set(i, img);
+    return img;
+  }, []);
+
+  /* ── instant first-frame load + progressive background streaming ────── */
   useLayoutEffect(() => {
     let cancelled = false;
-    let loaded = 0;
-    const cache = new Map<number, HTMLImageElement>();
-    let batchStart = 0;
-    const BATCH = 20;
+    const cache = cacheRef.current;
 
-    const loadBatch = () => {
+    // 1. Instantly load initial frame 0 to mark page ready without waiting
+    const frame0 = new Image();
+    frame0.src = framePath(0);
+    const onFrame0Load = () => {
       if (cancelled) return;
-      const end = Math.min(batchStart + BATCH, TOTAL_FRAMES);
-      for (let i = batchStart; i < end; i++) {
-        const img = new Image();
-        img.src = framePath(i);
-        img.onload = () => {
-          if (cancelled) return;
-          loaded++;
-          cache.set(i, img);
-          if (loaded === TOTAL_FRAMES) {
-            cacheRef.current = cache;
-            setReady(true);
-            ScrollTrigger.refresh();
-          }
-        };
-      }
-      batchStart = end;
-      if (batchStart < TOTAL_FRAMES) requestAnimationFrame(loadBatch);
+      cache.set(0, frame0);
+      setReady(true);
+      ScrollTrigger.refresh();
     };
-    loadBatch();
+
+    if (frame0.complete) {
+      onFrame0Load();
+    } else {
+      frame0.onload = onFrame0Load;
+    }
+
+    // 2. Build prioritized background loading queue (keyframes first, then remainder)
+    const loadQueue: number[] = [];
+    for (let i = 1; i < TOTAL_FRAMES; i += 5) {
+      loadQueue.push(i);
+    }
+    for (let i = 1; i < TOTAL_FRAMES; i++) {
+      if (i % 5 !== 0) loadQueue.push(i);
+    }
+
+    let qIdx = 0;
+    const BATCH = 15;
+    const loadNextBatch = () => {
+      if (cancelled || qIdx >= loadQueue.length) return;
+      const end = Math.min(qIdx + BATCH, loadQueue.length);
+      for (let i = qIdx; i < end; i++) {
+        const idx = loadQueue[i];
+        if (!cache.has(idx)) {
+          const img = new Image();
+          img.src = framePath(idx);
+          img.onload = () => {
+            if (!cancelled) cache.set(idx, img);
+          };
+          cache.set(idx, img);
+        }
+      }
+      qIdx = end;
+      if (qIdx < loadQueue.length) {
+        requestAnimationFrame(loadNextBatch);
+      }
+    };
+
+    requestAnimationFrame(loadNextBatch);
 
     return () => {
       cancelled = true;
     };
   }, []);
 
-  /* ── draw a single frame ──────────────────────────────────────────── */
+  /* ── draw a frame with fallback to nearest cached frame ───────────── */
   const showFrame = useCallback((index: number) => {
     const img = imgRef.current;
+    if (!img) return;
+    lastIdx.current = index;
+
     const frame = cacheRef.current.get(index);
-    if (img && frame) {
+    if (frame && frame.complete && frame.naturalWidth > 0) {
       img.src = frame.src;
-      lastIdx.current = index;
+      return;
     }
-  }, []);
+
+    // Trigger load for missing frame
+    loadSingleFrame(index);
+
+    // Fallback to nearest complete frame in cache
+    let bestDist = Infinity;
+    let bestFrame: HTMLImageElement | null = null;
+    cacheRef.current.forEach((cachedImg, idx) => {
+      if (cachedImg.complete && cachedImg.naturalWidth > 0) {
+        const dist = Math.abs(idx - index);
+        if (dist < bestDist) {
+          bestDist = dist;
+          bestFrame = cachedImg;
+        }
+      }
+    });
+
+    if (bestFrame) {
+      img.src = (bestFrame as HTMLImageElement).src;
+    } else {
+      img.src = framePath(index);
+    }
+  }, [loadSingleFrame]);
 
   /* ── reduced-motion: show a single static mid-frame ───────────────── */
   useLayoutEffect(() => {
@@ -186,14 +252,20 @@ export default function FrameScrubber() {
           >
             {studio.tagline}
           </p>
-          <h1 className="font-sans text-[clamp(1.9rem,6.2vw,5.4rem)] font-light uppercase leading-[1.02] tracking-[0.02em] text-paper">
-            <span className="block">We don&apos;t just</span>
-            <span className="block">design spaces.</span>
-            <span className="block mt-3 text-taupe md:mt-4">We design how</span>
-            <span className="block">
+          <TextReveal
+            as="h1"
+            className="font-sans text-[clamp(1.9rem,6.2vw,5.4rem)] font-light uppercase leading-[1.02] tracking-[0.02em] text-paper"
+            speed={1.2}
+            stagger={0.06}
+            delay={0.2}
+          >
+            <span className="block" data-line>We don&apos;t just</span>
+            <span className="block" data-line>design spaces.</span>
+            <span className="block mt-3 text-taupe md:mt-4" data-line>We design how</span>
+            <span className="block" data-line>
               they <em className="font-serif font-light italic text-brass">feel</em>.
             </span>
-          </h1>
+          </TextReveal>
           <div
             data-hero
             className="absolute bottom-9 left-0 right-0 flex flex-col items-center gap-4"
