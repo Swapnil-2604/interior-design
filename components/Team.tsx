@@ -1,10 +1,15 @@
 "use client";
 
 import Reveal from "./Reveal";
+import TextReveal from "./TextReveal";
 import { team } from "@/lib/site";
 
-/** The people behind the spaces. Without a commissioned portrait library we
- *  show a quiet monogram plate — architectural, never a stock photo. */
+const teamImages: Record<string, string> = {
+  "Aria Moreau": "/images/team-aanya-sharma.png",
+  "Daniel Kirchner": "/images/team-vikram-mehta.png",
+};
+
+/** The people behind the spaces. Elegant portrait gallery with monogram fallbacks. */
 export default function Team() {
   return (
     <section id="team" className="relative bg-paper py-32 text-ink md:py-44">
@@ -21,9 +26,16 @@ export default function Team() {
 
         <div className="mt-14 md:mt-20">
           <Reveal as="div" y={50} duration={1.3} start="top 88%">
-            <h2 className="max-w-[18ch] font-serif text-[clamp(1.9rem,4vw,3.8rem)] font-light leading-[1.1] text-ink">
-              A small team, carrying the whole of each project.
-            </h2>
+            <TextReveal
+              as="h2"
+              className="max-w-[18ch] font-serif text-[clamp(1.9rem,4vw,3.8rem)] font-light leading-[1.1] text-ink"
+              speed={1.2}
+              stagger={0.06}
+              delay={0.15}
+            >
+              <span className="block" data-line>A small team, carrying the</span>
+              <span className="block" data-line>whole of each project.</span>
+            </TextReveal>
           </Reveal>
         </div>
 
@@ -38,10 +50,18 @@ export default function Team() {
               start="top 92%"
             >
               <div className="group">
-                <div className="flex aspect-[4/5] items-end justify-start border border-line bg-paper-2 p-6 transition-colors duration-500 group-hover:border-brass/60">
-                  <span className="font-serif text-[6rem] font-light italic leading-none text-ink/15 transition-colors duration-500 group-hover:text-brass/40">
-                    {t.name.charAt(0)}
-                  </span>
+                <div className="relative flex aspect-[4/5] items-end justify-start overflow-hidden border border-line bg-paper-2 transition-colors duration-500 group-hover:border-brass/60">
+                  {teamImages[t.name] ? (
+                    <img
+                      src={teamImages[t.name]}
+                      alt={t.name}
+                      className="h-full w-full object-cover grayscale transition-all duration-700 group-hover:scale-105 group-hover:grayscale-0"
+                    />
+                  ) : (
+                    <span className="p-6 font-serif text-[6rem] font-light italic leading-none text-ink/15 transition-colors duration-500 group-hover:text-brass/40">
+                      {t.name.charAt(0)}
+                    </span>
+                  )}
                 </div>
                 <h3 className="mt-5 font-serif text-xl font-light italic text-ink">
                   {t.name}
