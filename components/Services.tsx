@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import Reveal from "./Reveal";
+import TextReveal from "./TextReveal";
 import { services } from "@/lib/site";
 
 export default function Services() {
@@ -23,9 +24,16 @@ export default function Services() {
 
         <div className="mt-14 md:mt-20">
           <Reveal as="div" y={50} duration={1.3} start="top 88%">
-            <h2 className="max-w-[18ch] font-sans text-[clamp(1.8rem,4.4vw,4.2rem)] font-light uppercase leading-[1.05] tracking-[0.02em]">
-              One studio, the full craft of a room.
-            </h2>
+            <TextReveal
+              as="h2"
+              className="max-w-[18ch] font-sans text-[clamp(1.8rem,4.4vw,4.2rem)] font-light uppercase leading-[1.05] tracking-[0.02em]"
+              speed={1.2}
+              stagger={0.06}
+              delay={0.15}
+            >
+              <span className="block" data-line>One studio, the full</span>
+              <span className="block" data-line>craft of a room.</span>
+            </TextReveal>
           </Reveal>
         </div>
 
@@ -39,22 +47,25 @@ export default function Services() {
               delay={i * 0.05}
               start="top 90%"
             >
-              <div className="group border-b border-line-light">
-                <div className="flex items-baseline gap-5 py-7 transition-colors duration-500 md:gap-10 md:py-9">
+              <Link
+                href={`/services/${s.slug}`}
+                className="group block border-b border-line-light transition-colors hover:bg-paper/5"
+              >
+                <div className="flex items-baseline gap-5 py-7 px-4 transition-colors duration-500 md:gap-10 md:py-9">
                   <span className="w-9 shrink-0 font-mono text-[11px] text-stone">
                     {s.n}
                   </span>
-                  <h3 className="shrink-0 font-sans text-xl font-light uppercase tracking-[0.04em] text-paper/85 transition-all duration-500 group-hover:translate-x-2 group-hover:text-paper md:text-[1.7rem]">
+                  <h3 className="shrink-0 font-sans text-xl font-light uppercase tracking-[0.04em] text-paper/85 transition-all duration-500 group-hover:translate-x-2 group-hover:text-brass md:text-[1.7rem]">
                     {s.title}
                   </h3>
                   <p className="hidden max-w-xs text-[13px] leading-[1.7] text-stone md:ml-auto md:block">
                     {s.desc}
                   </p>
-                  <span className="ml-auto hidden text-lg text-brass opacity-0 transition-all duration-500 group-hover:translate-x-0 group-hover:opacity-100 md:ml-4 md:block md:-translate-x-2">
+                  <span className="ml-auto text-lg text-brass opacity-60 transition-all duration-500 group-hover:translate-x-1 group-hover:opacity-100 md:ml-4 md:block">
                     &#8599;
                   </span>
                 </div>
-              </div>
+              </Link>
             </Reveal>
           ))}
         </div>
