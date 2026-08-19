@@ -136,6 +136,78 @@
       transform: translateY(240%);
     }
   }
+
+  /* Luxury CTA: hairline brass border, ink fill rises from the baseline on
+     hover, label settles finer. No bounce — a slow, weighted settle. */
+  .btn-fill {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+    border: 1px solid var(--brass);
+    color: var(--paper);
+    transition: color 0.5s cubic-bezier(0.65, 0, 0.35, 1);
+  }
+  .btn-fill::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background: var(--ink);
+    transform: translateY(101%);
+    transition: transform 0.55s cubic-bezier(0.65, 0, 0.35, 1);
+  }
+  .btn-fill:hover::before,
+  .btn-fill:focus-visible::before {
+    transform: translateY(0);
+  }
+  .btn-fill:hover,
+  .btn-fill:focus-visible {
+    color: var(--brass);
+  }
+
+  /* inverse variant for light sections: paper fill behind ink text */
+  .btn-fill--light {
+    border-color: var(--ink);
+    color: var(--ink);
+  }
+  .btn-fill--light::before {
+    background: var(--paper);
+  }
+  .btn-fill--light:hover,
+  .btn-fill--light:focus-visible {
+    color: var(--ink);
+  }
+
+  /* View Transition: cross-fade between routes */
+  .view-transition-wrapper {
+    view-transition-name: page-crossfade;
+  }
+
+  @view-transition {
+    navigation: auto;
+  }
+
+  ::view-transition-old(page-crossfade),
+  ::view-transition-new(page-crossfade) {
+    animation-duration: 0.45s;
+    animation-timing-function: cubic-bezier(0.65, 0, 0.35, 1);
+  }
+
+  ::view-transition-old(page-crossfade) {
+    animation-name: -ua-view-transition-fade-out;
+  }
+
+  ::view-transition-new(page-crossfade) {
+    animation-name: -ua-view-transition-fade-in;
+  }
+
+  /* Respect reduced motion */
+  @media (prefers-reduced-motion: reduce) {
+    ::view-transition-old(page-crossfade),
+    ::view-transition-new(page-crossfade) {
+      animation-duration: 0.001ms;
+    }
+  }
 }
 
 /* The scroll runway is compressed to a single viewport under
