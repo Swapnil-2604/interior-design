@@ -2,7 +2,9 @@
 
 import Link from "next/link";
 import Reveal from "./Reveal";
-import { PlateArch, PLATES } from "./plates";
+import MaskedReveal from "./MaskedReveal";
+import TextReveal from "./TextReveal";
+import { PlateArch } from "./plates";
 import { signatureWorks } from "@/lib/site";
 
 export default function SignatureWorks() {
@@ -33,19 +35,20 @@ export default function SignatureWorks() {
           </div>
         </Reveal>
 
-        <div className="mt-14 max-w-[18ch] md:mt-20">
+        <div className="mt-14 max-w-[20ch] md:mt-20">
           <Reveal as="div" y={50} duration={1.3} start="top 88%">
-            <h2 className="font-serif text-[clamp(1.9rem,4vw,3.8rem)] font-light leading-[1.1]">
-              Three rooms we keep going back to —{" "}
-              <em className="italic text-brass">each one a signature</em>.
-            </h2>
+            <TextReveal as="h2" className="font-serif text-[clamp(1.9rem,4vw,3.8rem)] font-light leading-[1.12]" speed={1.2} stagger={0.06} delay={0.15}>
+              <span className="block" data-line>Three rooms we keep going back to —</span>
+              <span className="block" data-line>
+                <em className="italic text-brass">each one a signature</em>.
+              </span>
+            </TextReveal>
           </Reveal>
         </div>
 
         <div className="mt-12 md:mt-20">
           {signatureWorks.map((f, i) => {
             const reversed = i % 2 === 1;
-            const Plate = PLATES[f.plate];
             return (
               <Reveal
                 key={f.n}
@@ -56,17 +59,33 @@ export default function SignatureWorks() {
                 start="top 88%"
               >
                 <div className="group relative grid items-center gap-10 border-t border-line-light py-16 md:grid-cols-12 md:gap-8 md:py-28">
-                  {/* framed drawing */}
+                  {/* framed project photo with technical drawing annotation */}
                   <div
                     className={`md:col-span-7 ${
                       reversed ? "md:col-start-6" : "md:col-start-1"
                     }`}
                   >
-                    <div className="border border-line-light bg-ink-2 p-4 md:p-6">
-                      <Plate className="h-[300px] w-full text-paper/80 transition-colors duration-700 group-hover:text-brass/70 sm:h-[380px] lg:h-[460px]" />
-                    </div>
+                    <MaskedReveal
+                      className="border border-line-light bg-ink-2"
+                      innerClassName="relative"
+                      start="top 85%"
+                      delay={i * 0.05}
+                    >
+                      <img
+                        src={
+                          f.plate === "arch"
+                            ? "/images/projects/courtyard-house.png"
+                            : f.plate === "light"
+                            ? "/images/projects/lightwell-penthouse.png"
+                            : "/images/projects/gallery-rue-vieille.png"
+                        }
+                        alt={f.title}
+                        className="h-[300px] w-full object-cover transition-transform duration-700 ease-out group-hover:scale-105 sm:h-[380px] lg:h-[460px]"
+                      />
+                      <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-ink/60 via-transparent to-transparent" />
+                    </MaskedReveal>
                     <p className="mt-3 font-mono text-[10px] uppercase tracking-far text-stone">
-                      Drawing {f.plate} / 1:50
+                      Drawing {f.plate} / 1:50 — {f.title}
                     </p>
                   </div>
 
@@ -106,10 +125,11 @@ export default function SignatureWorks() {
           <div className="mt-6 border-t border-line-light pt-10 md:mt-10">
             <Link
               href="/work"
-              className="group inline-flex items-center gap-4 text-[11px] uppercase tracking-luxe text-paper/85 transition-colors hover:text-paper"
+              className="group inline-flex items-center gap-4 text-[11px] uppercase tracking-luxe text-paper/85 transition-colors hover:text-paper relative"
             >
               View all work
-              <span className="text-brass transition-transform duration-500 group-hover:translate-x-1">
+              <span className="absolute -bottom-1 left-0 h-px w-0 bg-brass transition-all duration-500 ease-[cubic-bezier(0.65,0,0.35,1)] group-hover:w-full" />
+              <span className="text-brass transition-transform duration-500 group-hover:translate-x-1 relative z-10">
                 &#8594;
               </span>
             </Link>

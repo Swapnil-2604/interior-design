@@ -1,46 +1,25 @@
 "use client";
 
-import { useLayoutEffect, useRef, useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
-import { gsap, usePrefersReducedMotion } from "@/lib/animations";
 import Reveal from "./Reveal";
+import MaskedReveal from "./MaskedReveal";
+import TextReveal from "./TextReveal";
 import { PLATES, type PlateKey } from "./plates";
 import { projectFilters, projects } from "@/lib/site";
 
 function ProjectVisual({ plate }: { plate: PlateKey }) {
-  const wrapRef = useRef<HTMLDivElement>(null);
-  const reduced = usePrefersReducedMotion();
   const Plate = PLATES[plate];
 
-  useLayoutEffect(() => {
-    const wrap = wrapRef.current;
-    if (!wrap || reduced) return;
-    const ctx = gsap.context(() => {
-      gsap.fromTo(
-        wrap,
-        { autoAlpha: 0, y: 70, scale: 1.06 },
-        {
-          autoAlpha: 1,
-          y: 0,
-          scale: 1,
-          duration: 1.5,
-          ease: "power3.out",
-          scrollTrigger: {
-            trigger: wrap,
-            start: "top 84%",
-            toggleActions: "play none none none",
-          },
-        },
-      );
-    });
-    return () => ctx.revert();
-  }, [reduced]);
-
   return (
-    <div ref={wrapRef}>
-      <div className="border border-line bg-paper-2 p-4 md:p-6">
+    <div>
+      <MaskedReveal
+        className="border border-line bg-paper-2 p-4 md:p-6"
+        innerClassName="relative"
+        start="top 84%"
+      >
         <Plate className="h-[300px] w-full text-ink sm:h-[380px] lg:h-[460px]" />
-      </div>
+      </MaskedReveal>
       <p className="mt-3 font-mono text-[10px] uppercase tracking-far text-taupe">
         Drawing {plate} / 1:50
       </p>
@@ -73,9 +52,16 @@ export default function Projects() {
 
         <div className="mt-14 md:mt-20">
           <Reveal as="div" y={50} duration={1.3} start="top 88%">
-            <h2 className="max-w-[16ch] font-sans text-[clamp(1.8rem,4.2vw,4rem)] font-light uppercase leading-[1.05] tracking-[0.02em]">
-              Rooms we are proud to have handed back.
-            </h2>
+            <TextReveal
+              as="h2"
+              className="max-w-[16ch] font-sans text-[clamp(1.8rem,4.2vw,4rem)] font-light uppercase leading-[1.05] tracking-[0.02em]"
+              speed={1.2}
+              stagger={0.06}
+              delay={0.15}
+            >
+              <span className="block" data-line>Rooms we are proud</span>
+              <span className="block" data-line>to have handed back.</span>
+            </TextReveal>
           </Reveal>
         </div>
 
@@ -185,10 +171,11 @@ export default function Projects() {
                       </p>
                       <Link
                         href="/contact"
-                        className="group mt-7 inline-flex items-center gap-3 text-[11px] uppercase tracking-luxe text-ink/80 transition-colors hover:text-ink"
+                        className="group relative mt-7 inline-flex items-center gap-3 text-[11px] uppercase tracking-luxe text-ink/80 transition-colors hover:text-ink"
                       >
                         View case study
-                        <span className="text-brass transition-transform duration-500 group-hover:translate-x-1 group-hover:-translate-y-0.5">
+                        <span className="absolute -bottom-1 left-0 h-px w-0 bg-brass transition-all duration-500 ease-[cubic-bezier(0.65,0,0.35,1)] group-hover:w-full" />
+                        <span className="text-brass relative z-10 transition-transform duration-500 group-hover:translate-x-1 group-hover:-translate-y-0.5">
                           &#8599;
                         </span>
                       </Link>
