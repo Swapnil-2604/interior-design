@@ -3,6 +3,7 @@ import { archivo, fraunces, geistMono } from "./fonts";
 import SmoothScroll from "@/components/SmoothScroll";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import ViewTransitionWrapper from "@/components/ViewTransitionWrapper";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -23,12 +24,15 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="en"
+      suppressHydrationWarning
       className={`${archivo.variable} ${fraunces.variable} ${geistMono.variable}`}
     >
       <body>
         <SmoothScroll>
           <Navbar />
-          {children}
+          <ViewTransitionWrapper>
+            {children}
+          </ViewTransitionWrapper>
           <Footer />
         </SmoothScroll>
       </body>
