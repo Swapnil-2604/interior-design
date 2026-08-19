@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import Reveal from "./Reveal";
+import TextReveal from "./TextReveal";
 import { PlatePlan } from "./plates";
 import { begin } from "@/lib/site";
 
@@ -36,10 +37,18 @@ export default function BeginProject() {
         <div className="mt-12 grid gap-10 md:mt-16 md:grid-cols-12 md:items-end md:gap-8">
           <div className="md:col-span-8">
             <Reveal as="div" y={50} duration={1.4} start="top 90%">
-              <h2 className="max-w-[14ch] font-serif text-[clamp(2rem,4.6vw,4.2rem)] font-light leading-[1.08] text-paper">
-                The next room is yours. Let&apos;s{" "}
-                <em className="italic text-brass">begin</em> it properly.
-              </h2>
+              <TextReveal
+                as="h2"
+                className="max-w-[14ch] font-serif text-[clamp(2rem,4.6vw,4.2rem)] font-light leading-[1.08] text-paper"
+                speed={1.2}
+                stagger={0.06}
+                delay={0.15}
+              >
+                <span className="block" data-line>The next room is yours. Let&apos;s</span>
+                <span className="block" data-line>
+                  <em className="italic text-brass">begin</em> it properly.
+                </span>
+              </TextReveal>
             </Reveal>
             <Reveal as="div" y={30} duration={1.1} delay={0.15} start="top 94%">
               <p className="mt-6 max-w-md text-[14px] leading-[1.8] text-stone">
@@ -55,7 +64,7 @@ export default function BeginProject() {
               </p>
               <Link
                 href="/contact"
-                className="group mt-8 inline-flex items-center gap-4 border border-paper/25 px-10 py-5 text-[11px] uppercase tracking-luxe text-paper transition-colors duration-500 hover:bg-paper hover:text-ink"
+                className="group btn-fill mt-8 inline-flex items-center gap-4 px-10 py-5 text-[11px] uppercase tracking-luxe transition-colors duration-500"
               >
                 {begin.cta}
                 <span className="transition-transform duration-500 group-hover:translate-x-1">

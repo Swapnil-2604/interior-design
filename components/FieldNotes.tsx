@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import Reveal from "./Reveal";
+import TextReveal from "./TextReveal";
 import { PLATES } from "./plates";
 import { fieldNotes } from "@/lib/site";
 
@@ -24,10 +25,18 @@ export default function FieldNotes() {
 
         <div className="mt-14 max-w-[18ch] md:mt-20">
           <Reveal as="div" y={50} duration={1.3} start="top 88%">
-            <h2 className="font-serif text-[clamp(1.9rem,4vw,3.8rem)] font-light leading-[1.1]">
-              Notes from the studio floor —{" "}
-              <em className="italic text-brass">observed, not drafted</em>.
-            </h2>
+            <TextReveal
+              as="h2"
+              className="font-serif text-[clamp(1.9rem,4vw,3.8rem)] font-light leading-[1.1]"
+              speed={1.2}
+              stagger={0.06}
+              delay={0.15}
+            >
+              <span className="block" data-line>Notes from the studio floor —</span>
+              <span className="block" data-line>
+                <em className="italic text-brass">observed, not drafted</em>.
+              </span>
+            </TextReveal>
           </Reveal>
         </div>
 

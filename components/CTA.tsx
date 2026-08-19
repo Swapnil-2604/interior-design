@@ -2,6 +2,7 @@
 
 import { useState, type FormEvent } from "react";
 import Reveal from "./Reveal";
+import TextReveal from "./TextReveal";
 import { PlateLight } from "./plates";
 import { contact, costCalculator } from "@/lib/site";
 
@@ -48,19 +49,25 @@ export default function CTA() {
 
         <div className="mt-14 max-w-[16ch] md:mt-20">
           <Reveal as="div" y={60} duration={1.5} start="top 90%">
-            <h2 className="font-sans text-[clamp(2rem,6vw,5.4rem)] font-light uppercase leading-[1.02] tracking-[0.02em]">
-              Let&apos;s create a space
-              <span className="block">
+            <TextReveal
+              as="h2"
+              className="font-sans text-[clamp(2rem,6vw,5.4rem)] font-light uppercase leading-[1.02] tracking-[0.02em]"
+              speed={1.1}
+              stagger={0.07}
+              delay={0.2}
+            >
+              <span className="block" data-line>Let&apos;s create a space</span>
+              <span className="block" data-line>
                 that feels like <em className="font-serif font-light italic text-brass">you</em>.
               </span>
-            </h2>
+            </TextReveal>
           </Reveal>
         </div>
 
         <Reveal as="div" y={40} duration={1.2} delay={0.15} start="top 95%">
           <a
             href={`mailto:${contact.email}`}
-            className="group mt-12 inline-flex items-center gap-4 border border-paper/25 px-10 py-5 text-[11px] uppercase tracking-luxe text-paper transition-colors duration-500 hover:bg-paper hover:text-ink md:mt-16"
+            className="group btn-fill mt-12 inline-flex items-center gap-4 px-10 py-5 text-[11px] uppercase tracking-luxe transition-colors duration-500 md:mt-16"
           >
             Start a conversation
             <span className="transition-transform duration-500 group-hover:translate-x-1">

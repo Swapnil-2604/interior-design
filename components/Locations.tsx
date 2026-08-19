@@ -1,6 +1,7 @@
 "use client";
 
 import Reveal from "./Reveal";
+import TextReveal from "./TextReveal";
 import { locations } from "@/lib/site";
 
 /** A quiet index of where the work has landed — city names as the headline,
@@ -21,9 +22,16 @@ export default function Locations() {
 
         <div className="mt-14 md:mt-20">
           <Reveal as="div" y={50} duration={1.3} start="top 88%">
-            <h2 className="max-w-[18ch] font-serif text-[clamp(1.9rem,4vw,3.8rem)] font-light leading-[1.1] text-ink">
-              Six countries, and a studio that travels for a good brief.
-            </h2>
+            <TextReveal
+              as="h2"
+              className="max-w-[18ch] font-serif text-[clamp(1.9rem,4vw,3.8rem)] font-light leading-[1.1] text-ink"
+              speed={1.2}
+              stagger={0.06}
+              delay={0.15}
+            >
+              <span className="block" data-line>Six countries, and a studio</span>
+              <span className="block" data-line>that travels for a good brief.</span>
+            </TextReveal>
           </Reveal>
         </div>
 

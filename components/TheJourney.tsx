@@ -1,6 +1,7 @@
 "use client";
 
 import Reveal from "./Reveal";
+import TextReveal from "./TextReveal";
 import { journey } from "@/lib/site";
 
 export default function TheJourney() {
@@ -22,9 +23,16 @@ export default function TheJourney() {
 
         <div className="mt-14 max-w-[18ch] md:mt-20">
           <Reveal as="div" y={50} duration={1.3} start="top 88%">
-            <h2 className="font-sans text-[clamp(1.8rem,4.2vw,4rem)] font-light uppercase leading-[1.05] tracking-[0.02em]">
-              From first listen to handover, on a schedule that holds.
-            </h2>
+            <TextReveal
+              as="h2"
+              className="font-sans text-[clamp(1.8rem,4.2vw,4rem)] font-light uppercase leading-[1.05] tracking-[0.02em]"
+              speed={1.2}
+              stagger={0.06}
+              delay={0.15}
+            >
+              <span className="block" data-line>From first listen to handover,</span>
+              <span className="block" data-line>on a schedule that holds.</span>
+            </TextReveal>
           </Reveal>
         </div>
 

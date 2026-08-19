@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Reveal from "./Reveal";
+import TextReveal from "./TextReveal";
 import { costCalculator } from "@/lib/site";
 
 const fmt = (v: number) => Math.round(v).toLocaleString("en-IN");
@@ -76,10 +77,18 @@ export default function CostCalculator() {
 
         <div className="mt-14 md:mt-20">
           <Reveal as="div" y={50} duration={1.3} start="top 88%">
-            <h2 className="max-w-[18ch] font-serif text-[clamp(1.9rem,4vw,3.8rem)] font-light leading-[1.1] text-ink">
-              A first sense of budget, before the{" "}
-              <em className="italic text-brass">conversation</em>.
-            </h2>
+            <TextReveal
+              as="h2"
+              className="max-w-[18ch] font-serif text-[clamp(1.9rem,4vw,3.8rem)] font-light leading-[1.1] text-ink"
+              speed={1.2}
+              stagger={0.06}
+              delay={0.15}
+            >
+              <span className="block" data-line>A first sense of budget, before the</span>
+              <span className="block" data-line>
+                <em className="italic text-brass">conversation</em>.
+              </span>
+            </TextReveal>
           </Reveal>
         </div>
 

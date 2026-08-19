@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Reveal from "./Reveal";
+import TextReveal from "./TextReveal";
 import { testimonials } from "@/lib/site";
 
 /** A single large quote that rotates on a slow cadence — one voice at a
@@ -38,9 +39,16 @@ export default function Testimonials() {
 
         <div className="mt-14 md:mt-20">
           <Reveal as="div" y={50} duration={1.3} start="top 88%">
-            <h2 className="max-w-[18ch] font-sans text-[clamp(1.8rem,4.4vw,4.2rem)] font-light uppercase leading-[1.05] tracking-[0.02em]">
-              From the people who live in our work.
-            </h2>
+            <TextReveal
+              as="h2"
+              className="max-w-[18ch] font-sans text-[clamp(1.8rem,4.4vw,4.2rem)] font-light uppercase leading-[1.05] tracking-[0.02em]"
+              speed={1.2}
+              stagger={0.06}
+              delay={0.15}
+            >
+              <span className="block" data-line>From the people who live</span>
+              <span className="block" data-line>in our work.</span>
+            </TextReveal>
           </Reveal>
         </div>
 
