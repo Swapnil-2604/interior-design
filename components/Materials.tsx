@@ -1,6 +1,7 @@
 "use client";
 
 import Reveal from "./Reveal";
+import TextReveal from "./TextReveal";
 import { materials } from "@/lib/site";
 
 const cols = [
@@ -28,9 +29,16 @@ export default function Materials() {
 
         <div className="mt-14 md:mt-20">
           <Reveal as="div" y={50} duration={1.3} start="top 88%">
-            <h2 className="max-w-[18ch] font-sans text-[clamp(1.8rem,4.4vw,4.2rem)] font-light uppercase leading-[1.05] tracking-[0.02em]">
-              Specified to age well, not just to photograph.
-            </h2>
+            <TextReveal
+              as="h2"
+              className="max-w-[18ch] font-sans text-[clamp(1.8rem,4.4vw,4.2rem)] font-light uppercase leading-[1.05] tracking-[0.02em]"
+              speed={1.2}
+              stagger={0.06}
+              delay={0.15}
+            >
+              <span className="block" data-line>Specified to age well,</span>
+              <span className="block" data-line>not just to photograph.</span>
+            </TextReveal>
           </Reveal>
         </div>
 
@@ -56,9 +64,18 @@ export default function Materials() {
                     className="group border-b border-line-light/60 transition-colors duration-300 hover:bg-ink-2"
                   >
                     <td className="py-5 pr-6">
-                      <span className="font-serif text-lg font-light italic text-paper/90">
-                        {m.category}
-                      </span>
+                      <div className="flex items-center gap-3">
+                        {m.category.includes("Oak") && (
+                          <img
+                            src="/images/material-smoked-oak.png"
+                            alt={m.category}
+                            className="h-9 w-9 rounded-sm border border-line-light object-cover transition-transform duration-300 group-hover:scale-110"
+                          />
+                        )}
+                        <span className="font-serif text-lg font-light italic text-paper/90">
+                          {m.category}
+                        </span>
+                      </div>
                     </td>
                     <td className="py-5 pr-6 font-mono text-[11px] text-stone">
                       {m.finish}
