@@ -40,6 +40,12 @@ for (const vp of viewports) {
   page.on("console", (m) => {
     if (m.type() === "error") consoleErrors.push(m.text());
   });
+  page.on("requestfailed", (req) => {
+    console.log("FAILED REQUEST:", req.url(), req.failure()?.errorText);
+  });
+  page.on("response", (res) => {
+    if (res.status() >= 400) console.log("404/ERR RESPONSE:", res.url(), res.status());
+  });
   page.on("pageerror", (e) => pageErrors.push(String(e)));
 
   await page.goto(BASE, { waitUntil: "load" });
@@ -87,7 +93,7 @@ for (const vp of viewports) {
   // scroll scrub: forward then reverse, desktop only (mobile runway differs)
   if (vp.name === "desktop") {
     const frameNum = (src) => {
-      const m = src.match(/frame-(\d{4})\.png$/);
+      const m = src.match(/frame-(\d{4})\.(png|webp)$/);
       return m ? parseInt(m[1], 10) : 0;
     };
     const runwayH = await page.evaluate(() => {
@@ -153,7 +159,7 @@ for (const vp of viewports) {
     const img = document.querySelector(".hero-runway img");
     return img ? img.getAttribute("src") : "";
   });
-  const midMatch = src.match(/frame-(\d{4})\.png$/);
+  const midMatch = src.match(/frame-(\d{4})\.(png|webp)$/);
   const mid = midMatch ? parseInt(midMatch[1], 10) : 0;
   check("[reduced-motion] image parked at a static mid-frame", mid > 60 && mid < 210, `frame=${mid}`);
 
