@@ -29,17 +29,27 @@ export default function ViewTransitionWrapper({ children }: { children: React.Re
 
     const transitionName = "page-crossfade";
 
-    // Start the view transition
-    if (document.startViewTransition) {
-      const transition = document.startViewTransition(() => {
-        // The content swap happens here (Next.js handles it)
-      });
+    // Start the view transition safely
+    if (typeof document !== "undefined" && "startViewTransition" in document) {
+      try {
+        const transition = (document as any).startViewTransition(() => {
+          // The content swap happens here
+        });
 
-      // We can hook into the transition lifecycle if needed
-      transition.finished.then(() => {
-        // Cleanup after transition completes
-        ScrollTrigger.refresh();
-      });
+        if (transition && transition.finished) {
+          transition.finished
+            .then(() => {
+              if (typeof ScrollTrigger !== "undefined") {
+                ScrollTrigger.refresh();
+              }
+            })
+            .catch(() => {
+              // Gracefully ignore AbortError when view transition is skipped or interrupted
+            });
+        }
+      } catch {
+        // Fallback if startViewTransition throws synchronously
+      }
     }
   }, [pathname]);
 

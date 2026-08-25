@@ -24,7 +24,7 @@ export default function RoomsWeCraft() {
           </div>
         </Reveal>
 
-        <div className="mt-14 max-w-[16ch] md:mt-20">
+        <div className="mt-14 max-w-3xl md:mt-20">
           <Reveal as="div" y={50} duration={1.3} start="top 88%">
             <TextReveal
               as="h2"
@@ -40,43 +40,46 @@ export default function RoomsWeCraft() {
         </div>
 
         {/* hairline mosaic — 7 cells, the first spans two columns */}
-        <Reveal as="div" y={44} duration={1.2} start="top 90%">
+        <Reveal as="div" y={15} duration={1} start="top 95%">
           <div className="mt-16 grid gap-px bg-line md:mt-24 md:grid-cols-2 lg:grid-cols-4">
             {rooms.map((r, i) => (
               <Link
                 key={r.title}
                 href={`/services/${r.slug}`}
-                className={`group block bg-paper-2 p-6 transition-colors duration-500 hover:bg-paper md:p-8 ${
+                className={`group flex flex-col justify-between bg-paper-2 p-6 transition-colors duration-500 hover:bg-paper md:p-8 ${
                   r.feature ? "col-span-2" : ""
                 }`}
               >
-                <div className="flex items-center justify-between">
-                  <span className="font-mono text-[10px] text-taupe">
-                    {String(i + 1).padStart(2, "0")}
-                  </span>
-                  <span className="text-[10px] uppercase tracking-luxe text-brass opacity-0 transition-opacity duration-300 group-hover:opacity-100">
-                    Explore Space &rarr;
-                  </span>
-                </div>
-                <div className="mt-6 flex items-baseline justify-between gap-4">
-                  <h3 className="font-serif text-xl font-light italic text-ink md:text-2xl transition-colors duration-300 group-hover:text-brass">
-                    {r.title}
-                  </h3>
-                  {r.feature && (
-                    <span className="shrink-0 text-[9px] uppercase tracking-luxe text-brass">
-                      Most requested
+                <div>
+                  <div className="flex items-center justify-between">
+                    <span className="font-mono text-[10px] text-taupe">
+                      {String(i + 1).padStart(2, "0")}
                     </span>
-                  )}
+                    <span className="text-[10px] uppercase tracking-luxe text-brass opacity-0 transition-opacity duration-300 group-hover:opacity-100">
+                      Explore Space &rarr;
+                    </span>
+                  </div>
+                  <div className="mt-6 flex items-baseline justify-between gap-4">
+                    <h3 className="font-serif text-xl font-light italic text-ink md:text-2xl transition-colors duration-300 group-hover:text-brass">
+                      {r.title}
+                    </h3>
+                    {r.feature && (
+                      <span className="shrink-0 text-[9px] uppercase tracking-luxe text-brass">
+                        Most requested
+                      </span>
+                    )}
+                  </div>
+                  <p className="mt-3 max-w-sm text-[12px] leading-[1.7] text-taupe">
+                    {r.line}
+                  </p>
                 </div>
-                <p className="mt-3 max-w-sm text-[12px] leading-[1.7] text-taupe">
-                  {r.line}
-                </p>
                 <MaskedReveal
                   className={`mt-8 w-full rounded-sm ${
                     r.feature ? "h-40 sm:h-56" : "h-28 sm:h-36"
                   }`}
                   innerClassName="h-full w-full"
-                  start="top 90%"
+                  start="top 98%"
+                  delay={i * 0.04}
                 >
                   {r.image ? (
                     <img

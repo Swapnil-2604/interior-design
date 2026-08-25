@@ -39,7 +39,7 @@ export default function BeginProject() {
             <Reveal as="div" y={50} duration={1.4} start="top 90%">
               <TextReveal
                 as="h2"
-                className="max-w-[14ch] font-serif text-[clamp(2rem,4.6vw,4.2rem)] font-light leading-[1.08] text-paper"
+                className="max-w-3xl font-serif text-[clamp(2rem,4.6vw,4.2rem)] font-light leading-[1.08] text-paper"
                 speed={1.2}
                 stagger={0.06}
                 delay={0.15}

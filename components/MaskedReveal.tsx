@@ -60,8 +60,9 @@ export default function MaskedReveal({
           ease: "power3.out",
           scrollTrigger: {
             trigger: el,
-            start,
+            start: start ?? "top 98%",
             toggleActions: "play none none none",
+            invalidateOnRefresh: true,
           },
         },
       );

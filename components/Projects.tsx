@@ -8,20 +8,30 @@ import TextReveal from "./TextReveal";
 import { PLATES, type PlateKey } from "./plates";
 import { projectFilters, projects } from "@/lib/site";
 
-function ProjectVisual({ plate }: { plate: PlateKey }) {
+function ProjectVisual({ plate, image, name }: { plate: PlateKey; image?: string; name: string }) {
   const Plate = PLATES[plate];
 
   return (
     <div>
       <MaskedReveal
-        className="border border-line bg-paper-2 p-4 md:p-6"
+        className="border border-line bg-paper-2 overflow-hidden rounded-xs"
         innerClassName="relative"
-        start="top 84%"
+        start="top 95%"
       >
-        <Plate className="h-[300px] w-full text-ink sm:h-[380px] lg:h-[460px]" />
+        {image ? (
+          <img
+            src={image}
+            alt={name}
+            className="h-[300px] w-full object-cover transition-transform duration-700 ease-out group-hover:scale-105 sm:h-[380px] lg:h-[460px]"
+          />
+        ) : (
+          <div className="p-4 md:p-6">
+            <Plate className="h-[300px] w-full text-ink sm:h-[380px] lg:h-[460px]" />
+          </div>
+        )}
       </MaskedReveal>
       <p className="mt-3 font-mono text-[10px] uppercase tracking-far text-taupe">
-        Drawing {plate} / 1:50
+        Project Photography / 1:50 — {name}
       </p>
     </div>
   );
@@ -54,7 +64,7 @@ export default function Projects() {
           <Reveal as="div" y={50} duration={1.3} start="top 88%">
             <TextReveal
               as="h2"
-              className="max-w-[16ch] font-sans text-[clamp(1.8rem,4.2vw,4rem)] font-light uppercase leading-[1.05] tracking-[0.02em]"
+              className="max-w-3xl font-sans text-[clamp(1.8rem,4.2vw,4rem)] font-light uppercase leading-[1.05] tracking-[0.02em]"
               speed={1.2}
               stagger={0.06}
               delay={0.15}
@@ -116,7 +126,7 @@ export default function Projects() {
                       reversed ? "md:col-start-6" : "md:col-start-1"
                     }`}
                   >
-                    <ProjectVisual plate={p.plate} />
+                    <ProjectVisual plate={p.plate} image={p.image} name={p.name} />
                   </div>
 
                   {/* text */}

@@ -35,7 +35,7 @@ export default function SignatureWorks() {
           </div>
         </Reveal>
 
-        <div className="mt-14 max-w-[20ch] md:mt-20">
+        <div className="mt-14 max-w-3xl md:mt-20">
           <Reveal as="div" y={50} duration={1.3} start="top 88%">
             <TextReveal as="h2" className="font-serif text-[clamp(1.9rem,4vw,3.8rem)] font-light leading-[1.12]" speed={1.2} stagger={0.06} delay={0.15}>
               <span className="block" data-line>Three rooms we keep going back to —</span>

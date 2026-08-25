@@ -23,6 +23,7 @@ export const services = [
     title: "Living Room",
     desc: "The heart of the home — designed for conversation, comfort and the quiet pleasure of a room that just works.",
     features: ["Furniture layout", "Lighting design", "Custom joinery", "Soft furnishing"],
+    image: "/images/rooms/living-room.png",
   },
   {
     n: "02",
@@ -30,6 +31,7 @@ export const services = [
     title: "Modular Kitchen",
     desc: "Workflows, storage and finishes choreographed around how you cook — not how a catalogue photographs.",
     features: ["Layout planning", "Countertop selection", "Hardware", "Appliance integration"],
+    image: "/images/rooms/kitchen.png",
   },
   {
     n: "03",
@@ -37,6 +39,7 @@ export const services = [
     title: "Bedroom",
     desc: "A room that holds rest. Calm proportion, warm materials and storage that disappears into the architecture.",
     features: ["Wardrobe design", "Lighting layers", "Material palette", "Acoustic comfort"],
+    image: "/images/rooms/bedroom.png",
   },
   {
     n: "04",
@@ -44,6 +47,7 @@ export const services = [
     title: "Dining Area",
     desc: "Where the table is the anchor — proportioned to the room, lit to flatter, built to last.",
     features: ["Table selection", "Seating design", "Ambient lighting", "Wall treatments"],
+    image: "/images/rooms/dining.png",
   },
   {
     n: "05",
@@ -51,6 +55,7 @@ export const services = [
     title: "Home Office",
     desc: "A workspace that sharpens focus without sacrificing the feeling of home.",
     features: ["Ergonomic planning", "Storage solutions", "Task lighting", "Acoustic treatment"],
+    image: "/images/rooms/study.png",
   },
   {
     n: "06",
@@ -58,6 +63,7 @@ export const services = [
     title: "Bathroom & Spa",
     desc: "A single vision of luxury — stone, steam and restorative calm in every material decision.",
     features: ["Stone selection", "Fixture design", "Wet room planning", "Lighting atmosphere"],
+    image: "/images/rooms/bath.png",
   },
   {
     n: "07",
@@ -65,6 +71,7 @@ export const services = [
     title: "Entry & Foyer",
     desc: "The first room is a threshold — it sets the register for the rest of the home.",
     features: ["Threshold design", "Console & art", "Lighting", "Architectural transition"],
+    image: "/images/rooms/entry.png",
   },
   {
     n: "08",
@@ -72,6 +79,7 @@ export const services = [
     title: "Full Home Interior",
     desc: "A single vision, carried through every room — consistent material language, unified flow, one accountable team.",
     features: ["Complete design", "Material coordination", "Project management", "Turnkey delivery"],
+    image: "/images/signature-living-room.png",
   },
 ];
 
@@ -203,15 +211,27 @@ export const materials = [
 export const beforeAfter = [
   {
     title: "The Living Room",
-    subtitle: "From bare walls to a curated sanctuary of light and material.",
+    subtitle: "From a cramped builder layout with a small window to an open sanctuary of light.",
+    beforeNote: "Original 1.2m window opening · Builder beige walls · Unoptimized layout",
+    afterNote: "Expanded 4.5m floor-to-ceiling glass · Travertine hearth · Cove lighting",
+    beforeImage: "/images/before-after/living-room-before.png",
+    afterImage: "/images/before-after/living-room-after.png",
   },
   {
     title: "The Kitchen",
-    subtitle: "From a cramped galley to a generous workspace that invites cooking.",
+    subtitle: "From a cramped galley layout to a generous, open culinary architecture.",
+    beforeNote: "Closed galley wall · Worn laminate counter · Single central bulb",
+    afterNote: "Open architectural flow · Nero Marquina marble island · Pocket millwork",
+    beforeImage: "/images/before-after/kitchen-before.png",
+    afterImage: "/images/before-after/kitchen-after.png",
   },
   {
     title: "The Bedroom",
-    subtitle: "From overlooked to the most considered room in the house.",
+    subtitle: "From an un-proportioned box to a serene master suite.",
+    beforeNote: "Plain un-articulated walls · Cramped bed position · Exposed wiring",
+    afterNote: "Fluted walnut acoustic wall · Centered platform bed · Indirect cove light",
+    beforeImage: "/images/before-after/bedroom-before.png",
+    afterImage: "/images/before-after/bedroom-after.png",
   },
 ];
 
@@ -229,6 +249,7 @@ export const projects = [
     year: "2025",
     desc: "A desert retreat turned on its axis to follow the sun. Lime-washed walls, travertine floors and a sequence of rooms that open one into the next.",
     plate: "arch" as PlateKey,
+    image: "/images/projects/villa-meridian.png",
   },
   {
     n: "02",
@@ -241,6 +262,7 @@ export const projects = [
     year: "2025",
     desc: "A former glassworks reborn as a gallery and café — raw concrete left honest, daylight admitted through a single monumental clerestory.",
     plate: "light" as PlateKey,
+    image: "/images/projects/maison-verre.png",
   },
   {
     n: "03",
@@ -253,6 +275,7 @@ export const projects = [
     year: "2024",
     desc: "A full-floor loft delivered turnkey around a walnut-clad core. Custom joinery throughout; every millimetre accounted for before construction began.",
     plate: "section" as PlateKey,
+    image: "/images/projects/loft-at-atlas.png",
   },
   {
     n: "04",
@@ -265,6 +288,7 @@ export const projects = [
     year: "2024",
     desc: "Thirty-eight rooms and a courtyard bar, each planned on paper at full scale before a single trade broke ground. Quiet, tactile, unhurried.",
     plate: "plan" as PlateKey,
+    image: "/images/projects/hotel-ombelle.png",
   },
 ];
 
@@ -392,36 +416,227 @@ export const locations = [
 
 /* ── Blog / Journal ───────────────────────────────────────────────────── */
 
-export const blogPosts = [
+export interface JournalArticle {
+  slug: string;
+  title: string;
+  category: string;
+  date: string;
+  readTime: string;
+  author: string;
+  excerpt: string;
+  heroImage: string;
+  content: {
+    introduction: string;
+    sections: Array<{ heading: string; body: string }>;
+    quote: string;
+    takeaways: string[];
+  };
+}
+
+export const blogPosts: JournalArticle[] = [
   {
+    slug: "modern-2bhk-interior-ideas",
     title: "Modern 2BHK Interior Ideas That Maximise Every Square Metre",
     category: "Space Planning",
+    date: "February 14, 2026",
+    readTime: "5 min read",
+    author: "Aria Moreau, Principal Designer",
     excerpt: "Small homes deserve big thinking. We break down layout strategies that make a 2BHK feel generous without adding a single wall.",
+    heroImage: "/images/rooms/living-room/1.png",
+    content: {
+      introduction:
+        "Designing a 2BHK apartment is not about shrinking full-scale villa furniture to fit smaller rooms. It is an exercise in spatial intelligence — discovering how light, proportion, and continuous material transitions can turn 90 square metres into an expansive, uncluttered home.",
+      sections: [
+        {
+          heading: "01. Establish Uninterrupted Sightlines",
+          body: "When entering a compact home, the eye should meet continuous plane transitions rather than immediate wall partitions. Using low-profile credenzas, pocketing glass doors, and unified travertine floor tiles allows visual depth to extend uninterrupted across living and dining zones.",
+        },
+        {
+          heading: "02. Millwork That Disappears Into the Shell",
+          body: "Standard freestanding wardrobes fragment small rooms. By engineering full-height floor-to-ceiling cabinetry painted to match the adjacent lime-plaster wall tone, storage capacity doubles while visual bulk completely vanishes into the background.",
+        },
+        {
+          heading: "03. Layered Cove & Architectural Lighting",
+          body: "Single central ceiling lights flatten small spaces and create harsh shadows. Perimeter warm LED coves and indirect low-level wash lighting visually push ceiling planes upward, giving compact rooms volumetric depth after dusk.",
+        },
+      ],
+      quote: "Space is created not by adding square metres, but by eliminating visual friction.",
+      takeaways: [
+        "Use monolithic neutral floor finishes across all living and circulation zones.",
+        "Integrate handleless full-height millwork flush with wall surfaces.",
+        "Replace solid partition walls with reeded glass or open timber dividers.",
+      ],
+    },
   },
   {
+    slug: "l-shaped-vs-u-shaped-kitchen",
     title: "L-Shaped vs U-Shaped Kitchen: Which Layout Works for You?",
     category: "Kitchen",
+    date: "February 02, 2026",
+    readTime: "6 min read",
+    author: "Daniel Kirchner, Head of Design",
     excerpt: "The kitchen is the most programmed room in a home. Here is how to choose between two of the most common layouts.",
+    heroImage: "/images/rooms/kitchen/2.png",
+    content: {
+      introduction:
+        "Every kitchen layout is an answer to a fundamental question: how do you move between cold storage, prep surfaces, and heat? Understanding the ergonomic physics of L-shaped versus U-shaped configurations ensures your culinary space balances workflow precision with social warmth.",
+      sections: [
+        {
+          heading: "01. The L-Shaped Layout: Social Integration & Open Flow",
+          body: "The L-shaped kitchen anchors two adjacent walls, leaving the central floor area open. This layout excels in open-plan homes where an island counter or dining table creates a seamless transition between prep and living zones.",
+        },
+        {
+          heading: "02. The U-Shaped Layout: Maximum Counter Continuous Efficiency",
+          body: "Wrapping three walls in continuous stone and cabinetry, the U-shaped configuration provides maximum counter surface area and dedicated storage runs. It creates a private, focused culinary zone ideal for passionate home cooks.",
+        },
+        {
+          heading: "03. Material Selection & Concealed Appliances",
+          body: "Regardless of layout geometry, specifying monolithic marble islands, smoked oak pocket door systems, and integrated panel appliances keeps hard working zones looking serene and architectural.",
+        },
+      ],
+      quote: "A well-designed kitchen measures workflow in fluid human steps, not static square feet.",
+      takeaways: [
+        "Choose L-shaped layouts for multi-user open plan entertaining spaces.",
+        "Opt for U-shaped configurations when maximum prep counter run is required.",
+        "Incorporate appliance garages to keep counter surfaces free of clutter.",
+      ],
+    },
   },
   {
+    slug: "small-bedroom-storage-ideas",
     title: "Small Bedroom Storage Ideas That Disappear Into the Architecture",
     category: "Bedroom",
+    date: "January 24, 2026",
+    readTime: "4 min read",
+    author: "Priya Sharma, Senior Interior Designer",
     excerpt: "Storage should be invisible when closed and effortless when open. These solutions are both.",
+    heroImage: "/images/rooms/bedroom/1.png",
+    content: {
+      introduction:
+        "A master bedroom should hold quiet, not clutter. When bedroom square footage is limited, smart storage design ensures practical storage capacity exists without imposing upon the room's serene visual atmosphere.",
+      sections: [
+        {
+          heading: "01. Headboard Niche & Integrated Nightstand Ledges",
+          body: "Rather than adding bulky bedside tables, we recess continuous timber ledges directly into padded headboard wall panels. Dimmable warm reading lights and hidden wireless charging pads maintain clean bedside lines.",
+        },
+        {
+          heading: "02. Cantilevered Platform Bed Storage",
+          body: "Elevating the bed frame on a recessed shadow-gap pedestal creates the illusion of floating while housing hydraulic lift-up storage compartments beneath the mattress platform.",
+        },
+        {
+          heading: "03. Full-Height Wardrobes With Touch Latches",
+          body: "Eliminating external drawer pulls and hardware in favor of push-to-open touch latches lets wardrobe fronts read as refined architectural paneling rather than heavy furniture.",
+        },
+      ],
+      quote: "True luxury in the bedroom is waking up to uncluttered, serene proportions.",
+      takeaways: [
+        "Build headboard walls with recessed niches and concealed charging ports.",
+        "Specify flush push-latch wardrobe doors matching room wall paint colors.",
+        "Utilize bed platform bases for integrated hydraulic linen storage.",
+      ],
+    },
   },
   {
+    slug: "choosing-laminates-material-guide",
     title: "Choosing Laminates: A Material Guide for Interior Surfaces",
     category: "Materials",
+    date: "January 15, 2026",
+    readTime: "7 min read",
+    author: "Daniel Kirchner, Head of Design",
     excerpt: "Not all laminates are equal. We walk through grades, finishes and applications so you can specify with confidence.",
+    heroImage: "/images/material-smoked-oak.png",
+    content: {
+      introduction:
+        "Modern surface laminates have evolved from basic synthetic sheets into sophisticated engineered materials. Understanding the distinctions between high-pressure laminates, anti-fingerprint matte surfaces, and post-formed edges is key to specifying durable, beautiful interiors.",
+      sections: [
+        {
+          heading: "01. High-Pressure Laminate (HPL) vs Low-Pressure (LPL)",
+          body: "HPL is manufactured under extreme pressure and heat, offering superior impact resistance, scratch tolerance, and moisture proofing — essential for kitchen shutters and high-use cabinetry.",
+        },
+        {
+          heading: "02. Anti-Fingerprint Thermal Matte Surfaces",
+          body: "Advanced acrylic-backed super-matte laminates use nanotech coatings that absorb light without reflecting glare, while repelling oils and fingerprints for effortless daily maintenance.",
+        },
+        {
+          heading: "03. Edge Banding & Seamless Corner Detailing",
+          body: "The hallmark of premium millwork is seamless edge banding. Utilizing 2mm solid ABS edge tapes with hot-melt PUR adhesives prevents moisture ingress and eliminates dark glue lines.",
+        },
+      ],
+      quote: "Materials should be specified for how gracefully they perform and age over years of touch.",
+      takeaways: [
+        "Use 1mm+ HPL grade laminates for heavy-traffic kitchen and wardrobe doors.",
+        "Specify anti-fingerprint super-matte finishes for dark joinery surfaces.",
+        "Ensure PUR hot-melt edge banding is used to prevent moisture peeling.",
+      ],
+    },
   },
   {
+    slug: "modern-false-ceiling-ideas",
     title: "Modern False Ceiling Ideas for Every Room",
     category: "Interior Trends",
+    date: "December 28, 2025",
+    readTime: "5 min read",
+    author: "Aria Moreau, Principal Designer",
     excerpt: "False ceilings do more than hide wiring — they shape acoustics, hold light and define a room's proportions.",
+    heroImage: "/images/rooms/dining/1.png",
+    content: {
+      introduction:
+        "The fifth wall of any room — the ceiling — defines the atmospheric envelope of space. Modern ceiling design moves away from heavy decorative drop steps toward subtle perimeter shadow gaps, acoustic micro-perforations, and linear light slots.",
+      sections: [
+        {
+          heading: "01. The 10mm Negative Shadow Reveal",
+          body: "Detailing a 10mm recessed shadow channel around ceiling edges detaches the ceiling plane from vertical walls, making room heights feel visually lighter and taller.",
+        },
+        {
+          heading: "02. Concealed Linear Light Slots & Warm Perimeter Coves",
+          body: "Recessing architectural LED magnetic tracks into dark linear ceiling slots provides flexible spotlighting while keeping the main white plaster ceiling clean of visible fixtures.",
+        },
+        {
+          heading: "03. Acoustic Plaster & Micro-Perforated Timber Trims",
+          body: "In open dining and living areas, seamless acoustic ceiling plasters absorb reverberation, creating intimate acoustic conditions during dinner conversations.",
+        },
+      ],
+      quote: "Light should flow from the architecture itself, never from intrusive fixtures.",
+      takeaways: [
+        "Detail 10mm shadow gaps at wall-ceiling junctions for architectural levity.",
+        "Integrate recessed magnetic light tracks flush with gypsum plasterboards.",
+        "Incorporate acoustic absorption materials above ceiling planes in high rooms.",
+      ],
+    },
   },
   {
+    slug: "complete-guide-to-3bhk-interior-cost",
     title: "The Complete Guide to 3BHK Interior Cost",
     category: "Budget",
+    date: "December 10, 2025",
+    readTime: "8 min read",
+    author: "Léa Fontaine, Project Manager",
     excerpt: "What does a full interior actually cost? We break down the real numbers behind a typical 3BHK project.",
+    heroImage: "/images/rooms/living-room/4.png",
+    content: {
+      introduction:
+        "Commissioning an interior design team for a 3BHK home requires clarity on financial allocations. Budget transparently splits across civil works, custom joinery, loose furniture, lighting scenography, and professional project supervision.",
+      sections: [
+        {
+          heading: "01. Civil & Structural Modifications (15–20%)",
+          body: "Demolition, electrical re-wiring, plumbing upgrades, plastering, and false ceiling works form the physical foundation upon which all surface finishes rest.",
+        },
+        {
+          heading: "02. Custom Millwork & Built-in Joinery (40–45%)",
+          body: "Modular kitchen systems, living room media consoles, bedroom wardrobes, and bathroom vanities represent the largest investment component in a turnkey home.",
+        },
+        {
+          heading: "03. Materials, Loose Furniture & Lighting (30–35%)",
+          body: "Stone countertops, engineered hardwood or marble flooring, lounge seating, dining sets, architectural fixtures, and soft textiles define the tactile experience.",
+        },
+      ],
+      quote: "A clear, itemised budget schedule built upfront prevents cost overrun during execution.",
+      takeaways: [
+        "Allocate 40-45% of total budget to custom built-in millwork and kitchen.",
+        "Maintain a 10% contingency reserve for unforeseen structural modifications.",
+        "Request itemized unit rate breakdowns before issuing purchase orders.",
+      ],
+    },
   },
 ];
 
@@ -1104,6 +1319,7 @@ export const fieldNotes = [
   {
     title: "On the height of a window sill",
     category: "Observation",
+    slug: "modern-2bhk-interior-ideas",
     excerpt:
       "At 900mm a sill reads as a ledge; at 1100 it reads as architecture. Ten centimetres is a decision.",
     plate: "light" as PlateKey,
@@ -1111,6 +1327,7 @@ export const fieldNotes = [
   {
     title: "Why we specify lime plaster over paint",
     category: "Material",
+    slug: "choosing-laminates-material-guide",
     excerpt:
       "Paint is a skin; lime is a breath. One peels at the edges, the other takes on the weather of the room.",
     plate: "section" as PlateKey,
@@ -1118,6 +1335,7 @@ export const fieldNotes = [
   {
     title: "The hallway is not a hallway",
     category: "Proportion",
+    slug: "modern-false-ceiling-ideas",
     excerpt:
       "It is the room you pass through most often — so we design it like one, and the house stops feeling thin.",
     plate: "plan" as PlateKey,
@@ -1125,12 +1343,12 @@ export const fieldNotes = [
 ];
 
 export const press = [
-  { year: "2026", publication: "Architectural Digest", kind: "Featured", note: "The Courtyard House in the March international edition." },
-  { year: "2025", publication: "Dezeen", kind: "Featured", note: "Lightwell Penthouse selected for the residential series." },
-  { year: "2025", publication: "Frame Awards", kind: "Shortlisted", note: "Hospitality interior of the year." },
-  { year: "2024", publication: "Dwell", kind: "Cover", note: "October issue, photographed at dusk." },
-  { year: "2024", publication: "The World of Interiors", kind: "Reviewed", note: "A profile of the Lyon gallery project." },
-  { year: "2023", publication: "Interior Design Magazine", kind: "Best of Year", note: "Honouree, residential category." },
+  { year: "2026", publication: "Architectural Digest", kind: "Featured", note: "The Courtyard House in the March international edition.", image: "/images/projects/courtyard-house.png" },
+  { year: "2025", publication: "Dezeen", kind: "Featured", note: "Lightwell Penthouse selected for the residential series.", image: "/images/projects/lightwell-penthouse.png" },
+  { year: "2025", publication: "Frame Awards", kind: "Shortlisted", note: "Hospitality interior of the year.", image: "/images/projects/hotel-ombelle.png" },
+  { year: "2024", publication: "Dwell", kind: "Cover", note: "October issue, photographed at dusk.", image: "/images/projects/villa-meridian.png" },
+  { year: "2024", publication: "The World of Interiors", kind: "Reviewed", note: "A profile of the Lyon gallery project.", image: "/images/projects/maison-verre.png" },
+  { year: "2023", publication: "Interior Design Magazine", kind: "Best of Year", note: "Honouree, residential category.", image: "/images/projects/loft-at-atlas.png" },
 ];
 
 export const begin = {

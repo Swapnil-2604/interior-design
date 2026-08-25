@@ -33,7 +33,7 @@ export default function PressRecognition() {
           </div>
         </Reveal>
 
-        <div className="mt-14 max-w-[18ch] md:mt-20">
+        <div className="mt-14 max-w-3xl md:mt-20">
           <Reveal as="div" y={50} duration={1.3} start="top 88%">
             <TextReveal
               as="h2"
@@ -61,10 +61,21 @@ export default function PressRecognition() {
               delay={i * 0.05}
               start="top 92%"
             >
-              <div className="group flex flex-wrap items-baseline gap-x-6 gap-y-2 border-b border-line-light py-6 md:py-7">
-                <span className="w-14 shrink-0 font-mono text-[11px] text-stone">
+              <div className="group flex flex-wrap items-center gap-x-6 gap-y-3 border-b border-line-light py-5 md:py-6">
+                <span className="w-12 shrink-0 font-mono text-[11px] text-stone">
                   {p.year}
                 </span>
+
+                {"image" in p && p.image && (
+                  <div className="h-12 w-20 shrink-0 overflow-hidden rounded-xs border border-line-light/30 bg-ink-2 hidden sm:block">
+                    <img
+                      src={p.image as string}
+                      alt={p.publication}
+                      className="h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-110"
+                    />
+                  </div>
+                )}
+
                 <h3 className="min-w-0 flex-1 font-serif text-[clamp(1.3rem,2.6vw,2.2rem)] font-light italic leading-none text-paper/90 transition-colors duration-500 group-hover:text-brass">
                   {p.publication}
                 </h3>

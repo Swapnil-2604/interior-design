@@ -47,7 +47,7 @@ export default function CTA() {
           </div>
         </Reveal>
 
-        <div className="mt-14 max-w-[16ch] md:mt-20">
+        <div className="mt-14 max-w-3xl md:mt-20">
           <Reveal as="div" y={60} duration={1.5} start="top 90%">
             <TextReveal
               as="h2"

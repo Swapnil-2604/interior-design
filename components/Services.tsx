@@ -26,7 +26,7 @@ export default function Services() {
           <Reveal as="div" y={50} duration={1.3} start="top 88%">
             <TextReveal
               as="h2"
-              className="max-w-[18ch] font-sans text-[clamp(1.8rem,4.4vw,4.2rem)] font-light uppercase leading-[1.05] tracking-[0.02em]"
+              className="max-w-3xl font-sans text-[clamp(1.8rem,4.4vw,4.2rem)] font-light uppercase leading-[1.05] tracking-[0.02em]"
               speed={1.2}
               stagger={0.06}
               delay={0.15}
@@ -51,17 +51,31 @@ export default function Services() {
                 href={`/services/${s.slug}`}
                 className="group block border-b border-line-light transition-colors hover:bg-paper/5"
               >
-                <div className="flex items-baseline gap-5 py-7 px-4 transition-colors duration-500 md:gap-10 md:py-9">
-                  <span className="w-9 shrink-0 font-mono text-[11px] text-stone">
+                <div className="flex items-center gap-5 py-6 px-4 transition-colors duration-500 md:gap-8 md:py-7">
+                  <span className="w-8 shrink-0 font-mono text-[11px] text-stone">
                     {s.n}
                   </span>
-                  <h3 className="shrink-0 font-sans text-xl font-light uppercase tracking-[0.04em] text-paper/85 transition-all duration-500 group-hover:translate-x-2 group-hover:text-brass md:text-[1.7rem]">
+
+                  {/* Service photo thumbnail */}
+                  {"image" in s && s.image && (
+                    <div className="h-16 w-24 shrink-0 overflow-hidden rounded-xs border border-line-light/30 bg-ink-2 hidden sm:block">
+                      <img
+                        src={s.image as string}
+                        alt={s.title}
+                        className="h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-110"
+                      />
+                    </div>
+                  )}
+
+                  <h3 className="shrink-0 font-sans text-xl font-light uppercase tracking-[0.04em] text-paper/85 transition-all duration-500 group-hover:translate-x-2 group-hover:text-brass md:text-[1.6rem]">
                     {s.title}
                   </h3>
+
                   <p className="hidden max-w-xs text-[13px] leading-[1.7] text-stone md:ml-auto md:block">
                     {s.desc}
                   </p>
-                  <span className="ml-auto text-lg text-brass opacity-60 transition-all duration-500 group-hover:translate-x-1 group-hover:opacity-100 md:ml-4 md:block">
+
+                  <span className="ml-auto text-lg text-brass opacity-60 transition-all duration-500 group-hover:translate-x-1 group-hover:opacity-100 md:ml-4">
                     &#8599;
                   </span>
                 </div>

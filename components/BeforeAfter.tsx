@@ -45,7 +45,7 @@ export default function BeforeAfter() {
           <Reveal as="div" y={50} duration={1.3} start="top 88%">
             <TextReveal
               as="h2"
-              className="max-w-[18ch] font-serif text-[clamp(1.9rem,4vw,3.8rem)] font-light leading-[1.1] text-ink"
+              className="max-w-3xl font-serif text-[clamp(1.9rem,4vw,3.8rem)] font-light leading-[1.1] text-ink"
               speed={1.2}
               stagger={0.06}
               delay={0.15}
@@ -85,10 +85,26 @@ export default function BeforeAfter() {
                   </button>
                 ))}
               </div>
-              <p className="mt-6 max-w-[26ch] text-[12px] leading-[1.8] text-taupe">
-                Drag the divider across the drawing to reveal the
-                transformation.
-              </p>
+
+              {/* Infrastructure transformation breakdown */}
+              <div className="mt-8 border-t border-line pt-5 space-y-4">
+                <div>
+                  <p className="font-mono text-[9px] uppercase tracking-luxe text-taupe">
+                    Original Infrastructure
+                  </p>
+                  <p className="mt-1.5 text-[12px] leading-[1.7] text-taupe/90">
+                    {beforeAfter[room].beforeNote}
+                  </p>
+                </div>
+                <div>
+                  <p className="font-mono text-[9px] uppercase tracking-luxe text-brass">
+                    Lumière Renovation
+                  </p>
+                  <p className="mt-1.5 text-[12px] leading-[1.7] text-ink font-medium">
+                    {beforeAfter[room].afterNote}
+                  </p>
+                </div>
+              </div>
             </div>
 
             {/* comparison frame */}
@@ -109,41 +125,66 @@ export default function BeforeAfter() {
                 onPointerCancel={() => {
                   drag.current = false;
                 }}
-                className="relative cursor-ew-resize touch-none select-none overflow-hidden border border-line bg-paper-2 p-4 md:p-6"
+                className="relative cursor-ew-resize touch-none select-none overflow-hidden border border-line bg-paper-2 p-2 sm:p-4 md:p-5 rounded-xs"
               >
-                <div className="relative">
-                  {/* AFTER — fully inked */}
-                  <Plate className="h-[300px] w-full text-ink sm:h-[400px] lg:h-[460px]" />
-                  {/* BEFORE — dimmed, clipped to the left of the divider */}
+                <div className="relative h-[320px] w-full overflow-hidden rounded-xs sm:h-[400px] lg:h-[480px]">
+                  {/* AFTER image (base layer - full architectural luxury) */}
+                  {beforeAfter[room].afterImage ? (
+                    <img
+                      src={beforeAfter[room].afterImage}
+                      alt={`${beforeAfter[room].title} After`}
+                      className="absolute inset-0 h-full w-full object-cover"
+                    />
+                  ) : (
+                    <Plate className="h-full w-full text-ink" />
+                  )}
+
+                  {/* BEFORE image (clipped layer - un-renovated builder infrastructure & small aperture overlay) */}
                   <div
-                    className="absolute inset-0"
+                    className="absolute inset-0 overflow-hidden"
                     style={{ clipPath: `inset(0 ${100 - pos}% 0 0)` }}
                   >
-                    <Plate className="h-[300px] w-full text-taupe/55 sm:h-[400px] lg:h-[460px]" />
+                    {beforeAfter[room].beforeImage ? (
+                      <div className="relative h-full w-full">
+                        <img
+                          src={beforeAfter[room].beforeImage}
+                          alt={`${beforeAfter[room].title} Before`}
+                          className="absolute inset-0 h-full w-full object-cover"
+                          style={{ filter: "sepia(0.28) saturate(0.7) brightness(0.82) contrast(0.92)" }}
+                        />
+                        {/* Architectural aperture frame overlay simulating restricted 1.2m builder window opening */}
+                        <div className="pointer-events-none absolute inset-0 border-[24px] border-ink/40 sm:border-[36px]" />
+                        <div className="pointer-events-none absolute bottom-4 left-4 rounded-xs bg-ink/85 px-3 py-1 font-mono text-[9px] uppercase tracking-luxe text-paper shadow-md">
+                          Original Window Frame (1.2m)
+                        </div>
+                      </div>
+                    ) : (
+                      <Plate className="h-full w-full text-taupe/55" />
+                    )}
                   </div>
 
-                  {/* divider */}
+                  {/* divider line & handle */}
                   <div
-                    className="absolute inset-y-0"
+                    className="absolute inset-y-0 z-10"
                     style={{ left: `${pos}%` }}
                   >
-                    <div className="h-full w-px bg-brass" />
+                    <div className="h-full w-px bg-brass shadow-lg" />
                     <div className="absolute top-1/2 -translate-x-1/2 -translate-y-1/2">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-full border border-brass bg-paper text-sm text-brass">
+                      <div className="flex h-10 w-10 items-center justify-center rounded-full border border-brass bg-paper text-sm text-brass shadow-md">
                         &#8596;
                       </div>
                     </div>
                   </div>
 
                   {/* labels */}
-                  <span className="absolute left-4 top-4 bg-paper/90 px-3 py-1 font-mono text-[9px] uppercase tracking-luxe text-ink">
-                    Before
+                  <span className="absolute left-4 top-4 z-20 rounded-xs bg-paper/90 px-3 py-1.5 font-mono text-[9px] uppercase tracking-luxe text-ink backdrop-blur-xs shadow-xs">
+                    Original Space
                   </span>
-                  <span className="absolute right-4 top-4 bg-ink/90 px-3 py-1 font-mono text-[9px] uppercase tracking-luxe text-paper">
-                    After
+                  <span className="absolute right-4 top-4 z-20 rounded-xs bg-ink/90 px-3 py-1.5 font-mono text-[9px] uppercase tracking-luxe text-paper backdrop-blur-xs shadow-xs">
+                    Lumière Renovation
                   </span>
                 </div>
-                <p className="mt-3 font-mono text-[10px] uppercase tracking-far text-taupe">
+                <p className="mt-4 font-mono text-[10px] uppercase tracking-far text-taupe">
                   {beforeAfter[room].title} / {beforeAfter[room].subtitle}
                 </p>
               </div>

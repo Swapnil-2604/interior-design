@@ -21,7 +21,7 @@ export default function TheJourney() {
           </div>
         </Reveal>
 
-        <div className="mt-14 max-w-[18ch] md:mt-20">
+        <div className="mt-14 max-w-3xl md:mt-20">
           <Reveal as="div" y={50} duration={1.3} start="top 88%">
             <TextReveal
               as="h2"

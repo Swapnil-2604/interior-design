@@ -79,7 +79,7 @@ export default function CostCalculator() {
           <Reveal as="div" y={50} duration={1.3} start="top 88%">
             <TextReveal
               as="h2"
-              className="max-w-[18ch] font-serif text-[clamp(1.9rem,4vw,3.8rem)] font-light leading-[1.1] text-ink"
+              className="max-w-3xl font-serif text-[clamp(1.9rem,4vw,3.8rem)] font-light leading-[1.1] text-ink"
               speed={1.2}
               stagger={0.06}
               delay={0.15}

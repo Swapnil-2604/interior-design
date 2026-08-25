@@ -306,11 +306,145 @@ export function PlateLight({ className }: { className?: string }) {
   );
 }
 
+/* ------------------------------------------------------------------ */
+/* FIG. 05 — L-Shaped Kitchen Layout Floorplan                        */
+/* ------------------------------------------------------------------ */
+export function PlateKitchenL({ className }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 400 500"
+      className={className}
+      fill="none"
+      stroke="currentColor"
+      aria-hidden="true"
+    >
+      <rect x="40" y="40" width="320" height="420" strokeWidth="1.5" />
+      <Caption x={56} y={60}>FIG. 05 — L-SHAPED KITCHEN</Caption>
+
+      {/* Room outer perimeter walls */}
+      <rect x="64" y="80" width="272" height="340" strokeWidth="1.5" />
+      <rect x="72" y="88" width="256" height="324" strokeWidth="1" strokeDasharray="3 3" />
+
+      {/* L-Shaped Counter Run (Top & Left walls) */}
+      <path
+        d="M72 88 H290 V148 H132 V360 H72 Z"
+        fill="currentColor"
+        fillOpacity="0.08"
+        strokeWidth="1.5"
+      />
+
+      {/* Sink (Wasch) on Top Run */}
+      <rect x="150" y="96" width="48" height="36" strokeWidth="1.2" />
+      <circle cx="164" cy="114" r="5" strokeWidth="1" />
+      <circle cx="184" cy="114" r="5" strokeWidth="1" />
+      <Caption x={154} y={144}>SINK</Caption>
+
+      {/* Cooktop/Hob (Herd) on Left Run */}
+      <rect x="80" y="210" width="40" height="48" strokeWidth="1.2" />
+      <circle cx="92" cy="224" r="6" strokeWidth="1" />
+      <circle cx="108" cy="224" r="6" strokeWidth="1" />
+      <circle cx="92" cy="244" r="6" strokeWidth="1" />
+      <circle cx="108" cy="244" r="6" strokeWidth="1" />
+      <Caption x={80} y={272}>HOB</Caption>
+
+      {/* Fridge (Kühl) at Left End */}
+      <rect x="76" y="300" width="50" height="52" strokeWidth="1.5" />
+      <line x1="76" y1="326" x2="126" y2="326" strokeWidth="1" />
+      <Caption x={82} y={320}>FRIDGE</Caption>
+
+      {/* Work Triangle (Dashed Brass Line) */}
+      <path
+        d="M174 114 L100 234 L101 326 Z"
+        stroke="#c5a059"
+        strokeWidth="1.5"
+        strokeDasharray="4 4"
+      />
+
+      {/* Open Dining/Living Flow Arrow */}
+      <path d="M220 260 H300 M280 250 L300 260 L280 270" strokeWidth="1.2" strokeOpacity="0.7" />
+      <Caption x={200} y={245}>OPEN PLAN FLOW</Caption>
+      <Caption x={210} y={290}>DINING ZONE &rarr;</Caption>
+
+      {/* Scale & Caption */}
+      <Ticks y={444} from={64} to={336} step={68} />
+      <Caption x={160} y={462}>LAYOUT: 4.2M x 3.6M</Caption>
+    </svg>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/* FIG. 06 — U-Shaped Kitchen Layout Floorplan                        */
+/* ------------------------------------------------------------------ */
+export function PlateKitchenU({ className }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 400 500"
+      className={className}
+      fill="none"
+      stroke="currentColor"
+      aria-hidden="true"
+    >
+      <rect x="40" y="40" width="320" height="420" strokeWidth="1.5" />
+      <Caption x={56} y={60}>FIG. 06 — U-SHAPED KITCHEN</Caption>
+
+      {/* Room outer perimeter walls */}
+      <rect x="64" y="80" width="272" height="340" strokeWidth="1.5" />
+
+      {/* U-Shaped Counter Run (Left, Top, Right walls) */}
+      <path
+        d="M72 360 V88 H328 V360 H268 V148 H132 V360 Z"
+        fill="currentColor"
+        fillOpacity="0.08"
+        strokeWidth="1.5"
+      />
+
+      {/* Cooktop/Hob on Top Center Run */}
+      <rect x="176" y="94" width="48" height="40" strokeWidth="1.2" />
+      <circle cx="190" cy="106" r="6" strokeWidth="1" />
+      <circle cx="210" cy="106" r="6" strokeWidth="1" />
+      <circle cx="190" cy="122" r="6" strokeWidth="1" />
+      <circle cx="210" cy="122" r="6" strokeWidth="1" />
+      <Caption x={186} y={144}>HOB</Caption>
+
+      {/* Sink on Left Run */}
+      <rect x="80" y="180" width="40" height="50" strokeWidth="1.2" />
+      <circle cx="100" cy="195" r="5" strokeWidth="1" />
+      <circle cx="100" cy="215" r="5" strokeWidth="1" />
+      <Caption x={80} y={244}>SINK</Caption>
+
+      {/* Fridge on Right Run */}
+      <rect x="280" y="180" width="42" height="50" strokeWidth="1.5" />
+      <line x1="280" y1="205" x2="322" y2="205" strokeWidth="1" />
+      <Caption x={282} y={200}>FRIDGE</Caption>
+
+      {/* Central Prep Island (Optional) */}
+      <rect x="160" y="240" width="80" height="70" strokeWidth="1.2" strokeDasharray="3 3" />
+      <Caption x={170} y={280}>PREP ISLAND</Caption>
+
+      {/* Work Triangle (Dashed Brass Line) */}
+      <path
+        d="M100 205 L200 114 L301 205 Z"
+        stroke="#c5a059"
+        strokeWidth="1.5"
+        strokeDasharray="4 4"
+      />
+
+      <Caption x={140} y={350}>ENCLOSED WORK TRIANGLE</Caption>
+
+      {/* Scale & Caption */}
+      <Ticks y={444} from={64} to={336} step={68} />
+      <Caption x={160} y={462}>LAYOUT: 3.8M x 3.8M</Caption>
+    </svg>
+  );
+}
+
 export const PLATES = {
   arch: PlateArch,
   plan: PlatePlan,
   section: PlateSection,
   light: PlateLight,
+  kitchenL: PlateKitchenL,
+  kitchenU: PlateKitchenU,
 } as const;
 
 export type PlateKey = keyof typeof PLATES;
