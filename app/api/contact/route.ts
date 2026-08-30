@@ -1,4 +1,6 @@
 import { NextResponse } from "next/server";
+import fs from "fs";
+import path from "path";
 import { agencyInfo } from "@/lib/agency";
 
 export async function POST(req: Request) {
@@ -40,14 +42,36 @@ export async function POST(req: Request) {
       recipient: agencyInfo.email,
     };
 
-    console.log("[LEAD RECEIVED - Automate Reality Labs]:", JSON.stringify(payload, null, 2));
-
-    // If Formspree endpoint or Resend key is configured in env, forward it
-    const formspreeEndpoint = process.env.FORMSPREE_ENDPOINT || "https://formspree.io/f/mpwzgqor";
-
+    // 1. Permanent Safety Net: Append lead to local logs/leads.json
     try {
-      if (formspreeEndpoint) {
-        await fetch(formspreeEndpoint, {
+      const logsDir = path.join(process.cwd(), "logs");
+      if (!fs.existsSync(logsDir)) {
+        fs.mkdirSync(logsDir, { recursive: true });
+      }
+      const leadsFilePath = path.join(logsDir, "leads.json");
+      let existingLeads: any[] = [];
+      if (fs.existsSync(leadsFilePath)) {
+        try {
+          const raw = fs.readFileSync(leadsFilePath, "utf8");
+          existingLeads = JSON.parse(raw);
+        } catch {
+          existingLeads = [];
+        }
+      }
+      existingLeads.push(payload);
+      fs.writeFileSync(leadsFilePath, JSON.stringify(existingLeads, null, 2), "utf8");
+      console.log(`[LEAD SAVED TO DISK]: ${leadsFilePath} | Total leads: ${existingLeads.length}`);
+    } catch (fsErr) {
+      console.error("[LEAD FILE SYSTEM LOGGING ERROR]:", fsErr);
+    }
+
+    // 2. Formspree Email Delivery via Environment Variable
+    const formspreeEndpoint = process.env.FORMSPREE_ENDPOINT;
+    let emailDelivered = false;
+
+    if (formspreeEndpoint && !formspreeEndpoint.includes("PLACEHOLDER")) {
+      try {
+        const formspreeRes = await fetch(formspreeEndpoint, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -55,16 +79,27 @@ export async function POST(req: Request) {
           },
           body: JSON.stringify(payload),
         });
+
+        if (formspreeRes.ok) {
+          emailDelivered = true;
+          console.log("[FORMSPREE EMAIL DISPATCH SUCCESS]: Forwarded to Formspree.");
+        } else {
+          console.warn("[FORMSPREE HTTP WARNING]:", formspreeRes.status, await formspreeRes.text());
+        }
+      } catch (forwardErr) {
+        console.warn("[FORMSPREE NETWORK ERROR]:", forwardErr);
       }
-    } catch (forwardErr) {
-      console.warn("[Formspree Forwarding Warning]:", forwardErr);
-      // Still succeed for the user since lead is logged on server
+    } else {
+      console.log(
+        "[FORMSPREE SKIPPED]: FORMSPREE_ENDPOINT not configured yet in .env.local. Lead is preserved safely in logs/leads.json.",
+      );
     }
 
     return NextResponse.json(
       {
         success: true,
         message: "Your inquiry has been received. Swapnil will respond within 24 hours.",
+        emailDelivered,
         data: payload,
       },
       { status: 200 },
