@@ -2,9 +2,16 @@ import type { Metadata } from "next";
 import WorkWithUsClient from "./WorkWithUsClient";
 
 export const metadata: Metadata = {
-  title: "Work With Us — Custom Web Design & Development for Interior Studios",
+  title: "Websites Built for the Business of Design | Automate Reality Labs",
   description:
-    "Lumière Interiors is a demonstration concept. We design and develop bespoke, high-converting websites, dynamic portfolios, and cost estimation platforms specifically for architecture and interior design studios.",
+    "We design and engineer bespoke, high-converting digital flagships, interactive cost estimation engines, and programmatic local SEO infrastructure exclusively for luxury architecture practices and interior design studios.",
+  keywords: [
+    "website design for interior designers",
+    "web development agency for architecture studios",
+    "interior design portfolio web design",
+    "custom cost calculator interior designers",
+    "Automate Reality Labs",
+  ],
 };
 
 export default function WorkWithUsPage() {
