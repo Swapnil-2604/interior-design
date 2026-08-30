@@ -5,6 +5,7 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import ViewTransitionWrapper from "@/components/ViewTransitionWrapper";
 import FloatingWhatsApp from "@/components/FloatingWhatsApp";
+import LumiereJsonLd from "@/components/LumiereJsonLd";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -35,32 +36,6 @@ export const viewport: Viewport = {
   colorScheme: "dark",
 };
 
-const jsonLd = {
-  "@context": "https://schema.org",
-  "@graph": [
-    {
-      "@type": "LocalBusiness",
-      "@id": "https://lumiere-interiors.studio/#organization",
-      "name": "Lumière Interiors",
-      "url": "https://lumiere-interiors.studio",
-      "logo": "https://lumiere-interiors.studio/images/projects/courtyard-house.png",
-      "description":
-        "Lumière Interiors is an architectural interior design studio crafting bespoke residential, hospitality, and commercial spaces.",
-      "telephone": "+91-22-6902-4400",
-      "email": "hello@lumiere-interiors.studio",
-      "address": {
-        "@type": "PostalAddress",
-        "streetAddress": "Waterfield Road, Bandra West",
-        "addressLocality": "Mumbai",
-        "postalCode": "400050",
-        "addressCountry": "IN",
-      },
-      "areaServed": ["Mumbai", "New Delhi", "Bengaluru", "Hyderabad", "Goa"],
-      "priceRange": "₹₹₹₹",
-    },
-  ],
-};
-
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
@@ -68,14 +43,10 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       suppressHydrationWarning
       className={`${archivo.variable} ${fraunces.variable} ${geistMono.variable}`}
     >
-      <head>
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-        />
-      </head>
+      <head />
       <body>
         <SmoothScroll>
+          <LumiereJsonLd />
           <Navbar />
           <ViewTransitionWrapper>{children}</ViewTransitionWrapper>
           <Footer />
