@@ -7,10 +7,10 @@ const jsonLd = {
   "@graph": [
     {
       "@type": "LocalBusiness",
-      "@id": "https://lumiere-interiors.studio/#organization",
+      "@id": "https://lumiereinteriors.automaterealitylabs.in/#organization",
       "name": "Lumière Interiors",
-      "url": "https://lumiere-interiors.studio",
-      "logo": "https://lumiere-interiors.studio/images/projects/courtyard-house.png",
+      "url": "https://lumiereinteriors.automaterealitylabs.in",
+      "logo": "https://lumiereinteriors.automaterealitylabs.in/images/projects/courtyard-house.png",
       "description":
         "Lumière Interiors is an architectural interior design studio crafting bespoke residential, hospitality, and commercial spaces.",
       "telephone": "+91-22-6902-4400",

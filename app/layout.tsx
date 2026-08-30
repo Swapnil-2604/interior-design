@@ -15,7 +15,11 @@ export const metadata: Metadata = {
   },
   description:
     "LUMIÈRE INTERIORS is an interior design and architecture studio. We don't just design spaces — we design how they feel.",
-  metadataBase: new URL("https://lumiere-interiors.studio"),
+  metadataBase: new URL(
+    process.env.NEXT_PUBLIC_SITE_URL ||
+    process.env.SITE_URL ||
+    "https://lumiereinteriors.automaterealitylabs.in",
+  ),
   openGraph: {
     title: "LUMIÈRE INTERIORS — Architecture & Bespoke Spaces",
     description: "We don't just design spaces. We design how they feel.",

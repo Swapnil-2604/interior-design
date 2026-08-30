@@ -6,7 +6,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
   const baseUrl =
     process.env.NEXT_PUBLIC_SITE_URL ||
     process.env.SITE_URL ||
-    "https://lumiere-interiors.studio";
+    "https://lumiereinteriors.automaterealitylabs.in";
 
   const now = new Date();
 
