@@ -46,7 +46,7 @@ export default function LumiereCaseStudyPage() {
 
             <Reveal as="p" y={20} duration={1.2} delay={0.15}>
               <span className="mt-6 block text-[16px] md:text-[19px] leading-relaxed text-taupe font-sans max-w-3xl">
-                How we engineered a 72-route Next.js web application featuring 60fps canvas sequence animations, interactive cost calculators, and programmatic local SEO to prove what high-end web development can do for interior design studios.
+                How we engineered an 82-route Next.js web application featuring 60fps canvas sequence animations, interactive cost calculators, and programmatic local SEO to prove what high-end web development can do for interior design studios.
               </span>
             </Reveal>
 
@@ -80,7 +80,7 @@ export default function LumiereCaseStudyPage() {
             </div>
             <div>
               <span className="font-mono text-[10px] uppercase text-taupe block">Route Complexity</span>
-              <span className="font-serif text-lg italic text-ink block mt-1">72 Static &amp; SSG Routes</span>
+              <span className="font-serif text-lg italic text-ink block mt-1">82 Production Routes</span>
             </div>
             <div>
               <span className="font-mono text-[10px] uppercase text-taupe block">Lead Capture Systems</span>
@@ -344,7 +344,7 @@ export default function LumiereCaseStudyPage() {
                 </h2>
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div className="rounded-xs border border-line bg-paper-2 p-6">
-                    <span className="font-serif text-3xl italic text-brass block">72 Routes</span>
+                    <span className="font-serif text-3xl italic text-brass block">82 Routes</span>
                     <p className="mt-2 text-[13px] text-taupe">
                       Every single route statically pre-rendered with Next.js App Router for instant edge delivery.
                     </p>

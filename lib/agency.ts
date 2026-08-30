@@ -400,7 +400,7 @@ Explore our deep teardown in the [Lumière Interiors Case Study](/work-with-us/p
     title: "Case Study Breakdown: Engineering Lumière Interiors",
     metaTitle: "Case Study: Building Lumière Interiors | Automate Reality Labs",
     description:
-      "A complete architectural and engineering breakdown of how we built Lumière Interiors — 72 static routes, 60fps canvas sequences, interactive estimation engines, and multi-city SEO.",
+      "A complete architectural and engineering breakdown of how we built Lumière Interiors — 82 verified routes, 60fps canvas sequences, interactive estimation engines, and multi-city SEO.",
     publishDate: "August 2026",
     readTime: "10 min read",
     category: "Case Study",
@@ -414,7 +414,7 @@ Explore our deep teardown in the [Lumière Interiors Case Study](/work-with-us/p
 
 **Lumière Interiors** was designed and engineered by **Automate Reality Labs** as a flagship demonstration of what happens when high-end editorial aesthetics meet enterprise-grade web development for the architecture and design industry.
 
-Rather than creating a basic 3-page template mockup, we built a complete, production-ready digital ecosystem spanning **72 routes**, programmatic city hubs, interactive calculation engines, and deep multi-media case studies.
+Rather than creating a basic 3-page template mockup, we built a complete, production-ready digital ecosystem spanning **82 routes**, programmatic city hubs, interactive calculation engines, and deep multi-media case studies.
 
 ---
 
@@ -444,7 +444,7 @@ Each project case study features:
 ---
 
 ### Verified Performance & Build Stats
-- **Total Static & SSG Routes**: 72 Pages
+- **Total Production Routes**: 82 Routes (Static & SSG)
 - **Build Time**: Under 3 seconds with Next.js Turbopack
 - **TypeScript Type Safety**: 100% strict verification, 0 runtime errors
 - **Mobile Responsiveness**: Fully responsive across 320px to 4K displays
