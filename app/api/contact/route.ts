@@ -66,11 +66,17 @@ export async function POST(req: Request) {
     }
 
     // 2. Formspree Email Delivery via Environment Variable
-    const formspreeEndpoint = process.env.FORMSPREE_ENDPOINT;
+    const formspreeEndpoint = process.env.FORMSPREE_ENDPOINT?.trim();
+    let formspreeStatus = 0;
+    let formspreeStatusText = "";
+    let formspreeResponseBody = "";
     let emailDelivered = false;
 
-    if (formspreeEndpoint && !formspreeEndpoint.includes("PLACEHOLDER")) {
+    console.log("[FORMSPREE CONFIG CHECK]: FORMSPREE_ENDPOINT is ->", formspreeEndpoint || "UNDEFINED / EMPTY");
+
+    if (formspreeEndpoint && !formspreeEndpoint.includes("PLACEHOLDER") && !formspreeEndpoint.includes("YOUR_ACTUAL")) {
       try {
+        console.log(`[FORMSPREE DISPATCHING]: POST ${formspreeEndpoint}`);
         const formspreeRes = await fetch(formspreeEndpoint, {
           method: "POST",
           headers: {
@@ -80,18 +86,26 @@ export async function POST(req: Request) {
           body: JSON.stringify(payload),
         });
 
+        formspreeStatus = formspreeRes.status;
+        formspreeStatusText = formspreeRes.statusText;
+        formspreeResponseBody = await formspreeRes.text();
+
+        console.log(`[FORMSPREE HTTP RESPONSE]: ${formspreeStatus} ${formspreeStatusText}`);
+        console.log(`[FORMSPREE BODY]:`, formspreeResponseBody);
+
         if (formspreeRes.ok) {
           emailDelivered = true;
-          console.log("[FORMSPREE EMAIL DISPATCH SUCCESS]: Forwarded to Formspree.");
+          console.log("[FORMSPREE SUCCESS]: Lead successfully forwarded to Formspree.");
         } else {
-          console.warn("[FORMSPREE HTTP WARNING]:", formspreeRes.status, await formspreeRes.text());
+          console.error(`[FORMSPREE REJECTED]: Formspree returned ${formspreeStatus}: ${formspreeResponseBody}`);
         }
       } catch (forwardErr) {
-        console.warn("[FORMSPREE NETWORK ERROR]:", forwardErr);
+        console.error("[FORMSPREE NETWORK ERROR]:", forwardErr);
+        formspreeResponseBody = forwardErr instanceof Error ? forwardErr.message : "Network error";
       }
     } else {
-      console.log(
-        "[FORMSPREE SKIPPED]: FORMSPREE_ENDPOINT not configured yet in .env.local. Lead is preserved safely in logs/leads.json.",
+      console.warn(
+        "[FORMSPREE SKIPPED]: FORMSPREE_ENDPOINT not set or still contains placeholder. Lead is preserved in logs/leads.json.",
       );
     }
 
@@ -100,6 +114,10 @@ export async function POST(req: Request) {
         success: true,
         message: "Your inquiry has been received. Swapnil will respond within 24 hours.",
         emailDelivered,
+        formspreeEndpoint: formspreeEndpoint || "NOT_SET",
+        formspreeStatus,
+        formspreeStatusText,
+        formspreeResponse: formspreeResponseBody,
         data: payload,
       },
       { status: 200 },
