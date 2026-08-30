@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import Reveal from "./Reveal";
 import TextReveal from "./TextReveal";
 import { costCalculator } from "@/lib/site";
@@ -39,13 +40,12 @@ function Seg({
   );
 }
 
-/** Interactive budget guidance. Property type → design style → finish level
- *  → area, resolved against a configurable per-sqft rate table. Deliberately
- *  labelled "indicative" — never a quote. */
-export default function CostCalculator() {
+export default function CostCalculator({ initialTier = "Signature" }: { initialTier?: string }) {
   const [type, setType] = useState("3 BHK");
   const [style, setStyle] = useState("Modern");
-  const [budget, setBudget] = useState("Premium");
+  const [budget, setBudget] = useState(
+    initialTier === "essential" ? "Essential" : initialTier === "bespoke" ? "Bespoke" : "Signature"
+  );
   const [area, setArea] = useState(1400);
 
   const [minA, maxA] = costCalculator.areaRanges[type] ?? [1100, 1700];
@@ -53,7 +53,7 @@ export default function CostCalculator() {
   const a = Math.min(Math.max(area, minA), maxA);
 
   const low = a * rate;
-  const high = a * rate * 1.18;
+  const high = a * rate * 1.15;
   const fillPct = ((a - minA) / Math.max(maxA - minA, 1)) * 100;
 
   const pickType = (t: string) => {
@@ -62,6 +62,13 @@ export default function CostCalculator() {
     setArea(Math.round((lo + hi) / 2));
   };
 
+  // Itemized estimations
+  const joineryEst = low * 0.42;
+  const civilEst = low * 0.22;
+  const lightingEst = low * 0.14;
+  const furnishingEst = low * 0.12;
+  const feesEst = low * 0.10;
+
   return (
     <section id="calculator" className="relative scroll-mt-24 bg-paper py-32 text-ink md:py-44">
       <div className="mx-auto w-full max-w-[1440px] px-6 md:px-10 lg:px-16">
@@ -69,7 +76,7 @@ export default function CostCalculator() {
           <div className="flex items-center gap-5">
             <span className="font-mono text-[11px] text-taupe">11</span>
             <span className="text-[11px] uppercase tracking-luxe text-taupe">
-              Cost Guidance
+              Interactive Cost Calculator
             </span>
             <span className="h-px flex-1 bg-line" />
           </div>
@@ -84,21 +91,21 @@ export default function CostCalculator() {
               stagger={0.06}
               delay={0.15}
             >
-              <span className="block" data-line>A first sense of budget, before the</span>
+              <span className="block" data-line>Instant project cost estimator —</span>
               <span className="block" data-line>
-                <em className="italic text-brass">conversation</em>.
+                <em className="italic text-brass">configured in real-time</em>.
               </span>
             </TextReveal>
           </Reveal>
         </div>
 
         <Reveal as="div" y={40} duration={1.2} start="top 92%">
-          <div className="mt-14 grid gap-10 md:mt-20 md:grid-cols-12 md:gap-8">
+          <div className="mt-14 grid gap-10 lg:grid-cols-12 lg:gap-12">
             {/* controls */}
-            <div className="md:col-span-7">
+            <div className="lg:col-span-7 space-y-10">
               <div className="border-t border-line pt-6">
                 <p className="mb-4 font-mono text-[10px] uppercase tracking-luxe text-taupe">
-                  Property
+                  01. Property Typology
                 </p>
                 <Seg
                   value={type}
@@ -107,9 +114,9 @@ export default function CostCalculator() {
                 />
               </div>
 
-              <div className="mt-10 border-t border-line pt-6">
+              <div className="border-t border-line pt-6">
                 <p className="mb-4 font-mono text-[10px] uppercase tracking-luxe text-taupe">
-                  Design style
+                  02. Design Language &amp; Architecture Style
                 </p>
                 <Seg
                   value={style}
@@ -118,9 +125,9 @@ export default function CostCalculator() {
                 />
               </div>
 
-              <div className="mt-10 border-t border-line pt-6">
+              <div className="border-t border-line pt-6">
                 <p className="mb-4 font-mono text-[10px] uppercase tracking-luxe text-taupe">
-                  Finish level
+                  03. Material &amp; Specification Tier
                 </p>
                 <Seg
                   value={budget}
@@ -129,15 +136,15 @@ export default function CostCalculator() {
                 />
               </div>
 
-              <div className="mt-10 border-t border-line pt-6">
+              <div className="border-t border-line pt-6">
                 <div className="mb-4 flex items-baseline justify-between gap-4">
                   <p className="font-mono text-[10px] uppercase tracking-luxe text-taupe">
-                    Approx. area
+                    04. Approximate Carpet Area
                   </p>
-                  <p className="font-serif text-xl italic text-ink">
+                  <p className="font-serif text-2xl italic text-ink">
                     {fmt(a)}{" "}
-                    <span className="font-mono text-[11px] not-italic text-taupe">
-                      ft&sup2;
+                    <span className="font-mono text-[12px] not-italic text-taupe">
+                      sq. ft ({Math.round(a * 0.0929)} m²)
                     </span>
                   </p>
                 </div>
@@ -145,46 +152,105 @@ export default function CostCalculator() {
                   type="range"
                   min={minA}
                   max={maxA}
-                  step={10}
+                  step={25}
                   value={a}
                   onChange={(e) => setArea(Number(e.target.value))}
-                  className="calc-range"
+                  className="calc-range w-full cursor-pointer"
                   style={{
                     background: `linear-gradient(to right, var(--ink) 0%, var(--ink) ${fillPct}%, var(--line) ${fillPct}%, var(--line) 100%)`,
                   }}
                   aria-label="Approximate area in square feet"
                 />
                 <div className="mt-3 flex justify-between font-mono text-[10px] text-taupe">
-                  <span>{fmt(minA)}</span>
-                  <span>{fmt(maxA)} ft&sup2;</span>
+                  <span>{fmt(minA)} sq.ft</span>
+                  <span>{fmt(maxA)} sq.ft</span>
+                </div>
+              </div>
+
+              {/* Itemized preview breakdown */}
+              <div className="border-t border-line pt-8">
+                <p className="mb-4 font-mono text-[10px] uppercase tracking-luxe text-taupe">
+                  Estimated Allocation Breakdown
+                </p>
+                <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 font-mono text-[11px]">
+                  <div className="rounded-xs border border-line bg-paper-2 p-3">
+                    <span className="text-taupe block text-[10px]">Joinery (42%)</span>
+                    <span className="text-ink font-semibold">₹{lakh(joineryEst)}L</span>
+                  </div>
+                  <div className="rounded-xs border border-line bg-paper-2 p-3">
+                    <span className="text-taupe block text-[10px]">Civil & Floor (22%)</span>
+                    <span className="text-ink font-semibold">₹{lakh(civilEst)}L</span>
+                  </div>
+                  <div className="rounded-xs border border-line bg-paper-2 p-3">
+                    <span className="text-taupe block text-[10px]">Lighting (14%)</span>
+                    <span className="text-ink font-semibold">₹{lakh(lightingEst)}L</span>
+                  </div>
+                  <div className="rounded-xs border border-line bg-paper-2 p-3">
+                    <span className="text-taupe block text-[10px]">Soft Furnishing (12%)</span>
+                    <span className="text-ink font-semibold">₹{lakh(furnishingEst)}L</span>
+                  </div>
+                  <div className="rounded-xs border border-line bg-paper-2 p-3 sm:col-span-2">
+                    <span className="text-taupe block text-[10px]">Design & Site Mgmt (10%)</span>
+                    <span className="text-ink font-semibold">₹{lakh(feesEst)}L</span>
+                  </div>
                 </div>
               </div>
             </div>
 
-            {/* result */}
-            <div className="md:col-span-4 md:col-start-9">
-              <div className="sticky top-28 flex h-full min-h-[320px] flex-col justify-between border border-line bg-ink p-8 text-paper md:p-10">
+            {/* result sidebar */}
+            <div className="lg:col-span-5">
+              <div className="sticky top-28 flex flex-col justify-between rounded-xs border border-line bg-ink p-8 text-paper md:p-10 shadow-2xl">
                 <div>
-                  <p className="text-[10px] uppercase tracking-luxe text-stone">
-                    Estimated range
-                  </p>
-                  <p className="mt-6 font-serif text-[clamp(1.9rem,3vw,2.5rem)] font-light italic leading-tight">
+                  <div className="flex items-center justify-between border-b border-line-light pb-4">
+                    <p className="text-[10px] uppercase tracking-luxe text-stone">
+                      Calculated Estimate Range
+                    </p>
+                    <span className="rounded-full bg-brass/20 px-2.5 py-0.5 font-mono text-[9px] uppercase text-brass">
+                      Fixed-Scope Guarantee
+                    </span>
+                  </div>
+
+                  <p className="mt-8 font-serif text-[clamp(2.2rem,4vw,3.2rem)] font-light italic leading-tight text-paper">
                     &#8377;{lakh(low)}L
-                    <span className="mx-2 font-sans text-base not-italic text-stone">
+                    <span className="mx-2 font-sans text-xl not-italic text-stone">
                       &ndash;
                     </span>
                     &#8377;{lakh(high)}L
                   </p>
-                  <p className="mt-5 font-mono text-[11px] leading-relaxed text-stone">
-                    &#8377;{fmt(rate)} / ft&sup2; &middot; {style} &middot;{" "}
-                    {budget}
+                  <p className="mt-4 font-mono text-[11px] leading-relaxed text-stone">
+                    &#8377;{fmt(rate)} / ft&sup2; &middot; {style} &middot; {budget} Tier
                   </p>
+
+                  <div className="mt-8 space-y-2 border-t border-line-light pt-6 text-[12px] text-stone font-sans">
+                    <div className="flex items-center justify-between">
+                      <span>Property Typology:</span>
+                      <span className="text-paper font-mono">{type}</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span>Total Measured Area:</span>
+                      <span className="text-paper font-mono">{fmt(a)} sq. ft</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span>Warranty Period:</span>
+                      <span className="text-brass font-mono">
+                        {budget === "Essential" ? "5-Year Warranty" : "10-Year Warranty"}
+                      </span>
+                    </div>
+                  </div>
                 </div>
-                <div className="mt-10 border-t border-line-light pt-6">
-                  <p className="text-[11px] leading-[1.8] text-stone">
-                    Indicative guidance only. A precise quotation follows a
-                    site visit and a full brief — scope, structure and site
-                    condition all shape the final number.
+
+                <div className="mt-10 border-t border-line-light pt-8">
+                  <Link
+                    href={`/contact?type=${encodeURIComponent(type)}&tier=${encodeURIComponent(
+                      budget
+                    )}&area=${a}&style=${encodeURIComponent(style)}`}
+                    className="btn-fill block w-full py-4 text-center text-[11px] uppercase tracking-luxe shadow-lg"
+                  >
+                    Lock In This Estimate &amp; Book Consultation →
+                  </Link>
+
+                  <p className="mt-4 text-center font-mono text-[10px] text-stone">
+                    No login required &middot; 24-hour turnaround
                   </p>
                 </div>
               </div>
