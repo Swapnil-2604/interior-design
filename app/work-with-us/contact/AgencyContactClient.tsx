@@ -6,7 +6,58 @@ import Reveal from "@/components/Reveal";
 import { agencyInfo } from "@/lib/agency";
 
 export default function AgencyContactClient() {
+  const [formData, setFormData] = useState({
+    name: "",
+    studio: "",
+    email: "",
+    phone: "",
+    website: "",
+    location: "",
+    package: "Signature Platform (₹2,75,000 / $3,450)",
+    timeline: "Within 4 Weeks",
+    goals: "",
+  });
+
+  const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [errorMsg, setErrorMsg] = useState("");
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setErrorMsg("");
+
+    try {
+      const res = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ...formData,
+          source: "Agency Contact Page (/work-with-us/contact)",
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || "Failed to submit inquiry.");
+      }
+
+      setSubmitted(true);
+    } catch (err: unknown) {
+      console.error("Submission error:", err);
+      setErrorMsg(
+        err instanceof Error
+          ? err.message
+          : "An unexpected error occurred. Please contact Swapnil directly via WhatsApp or email.",
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const whatsappInquiryText = encodeURIComponent(
+    `Hi Swapnil, I'd like to discuss a custom studio website project for ${formData.studio || "our architecture/interior practice"}.\n\nName: ${formData.name || "Client"}\nEmail: ${formData.email || "Not provided"}\nDesired Package: ${formData.package}\nTimeline: ${formData.timeline}\nNotes: ${formData.goals || "Looking for a custom platform quote."}`,
+  );
 
   return (
     <div className="min-h-screen bg-paper text-ink">
@@ -125,30 +176,38 @@ export default function AgencyContactClient() {
                 </p>
 
                 {submitted ? (
-                  <div className="mt-8 rounded-xs border border-brass/40 bg-brass/10 p-8 text-center">
+                  <div className="mt-8 rounded-xs border border-brass/40 bg-brass/10 p-8 text-center animate-in fade-in duration-300">
                     <h3 className="font-serif text-2xl italic text-ink">
-                      Inquiry Received
+                      Inquiry Received Successfully
                     </h3>
                     <p className="mt-3 text-[14px] text-taupe leading-relaxed">
-                      Thank you! Swapnil will review your studio details and get back to you with a comprehensive architectural proposal within 24 business hours.
+                      Thank you, <strong className="text-ink">{formData.name}</strong>! Your inquiry has been routed to Swapnil. We will review your studio requirements and reach out within 24 business hours.
                     </p>
-                    <div className="mt-6">
+                    <div className="mt-6 flex flex-wrap items-center justify-center gap-4">
+                      <a
+                        href={`https://wa.me/918605832851?text=${whatsappInquiryText}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="btn-fill px-6 py-2.5 text-[10px] uppercase tracking-luxe"
+                      >
+                        Message on WhatsApp Now ↗
+                      </a>
                       <Link
                         href="/"
-                        className="btn-fill px-6 py-2.5 text-[10px] uppercase tracking-luxe"
+                        className="rounded-full border border-line bg-paper px-5 py-2.5 font-mono text-[10px] uppercase tracking-wider text-taupe hover:text-ink transition-colors"
                       >
                         Return to Lumière Demo
                       </Link>
                     </div>
                   </div>
                 ) : (
-                  <form
-                    onSubmit={(e) => {
-                      e.preventDefault();
-                      setSubmitted(true);
-                    }}
-                    className="mt-8 space-y-6"
-                  >
+                  <form onSubmit={handleSubmit} className="mt-8 space-y-6">
+                    {errorMsg && (
+                      <div className="rounded-xs border border-red-500/40 bg-red-500/10 p-4 text-[12px] text-red-600 font-mono">
+                        {errorMsg}
+                      </div>
+                    )}
+
                     <div className="grid gap-6 sm:grid-cols-2">
                       <div>
                         <label className="block font-mono text-[10px] uppercase tracking-wider text-taupe mb-2">
@@ -157,6 +216,8 @@ export default function AgencyContactClient() {
                         <input
                           type="text"
                           required
+                          value={formData.name}
+                          onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                           placeholder="e.g. Rohini Mehta"
                           className="w-full border border-line bg-paper px-4 py-3 text-[13px] text-ink focus:border-brass focus:outline-none"
                         />
@@ -168,6 +229,8 @@ export default function AgencyContactClient() {
                         <input
                           type="text"
                           required
+                          value={formData.studio}
+                          onChange={(e) => setFormData({ ...formData, studio: e.target.value })}
                           placeholder="e.g. Studio Mehta Architects"
                           className="w-full border border-line bg-paper px-4 py-3 text-[13px] text-ink focus:border-brass focus:outline-none"
                         />
@@ -182,6 +245,8 @@ export default function AgencyContactClient() {
                         <input
                           type="email"
                           required
+                          value={formData.email}
+                          onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                           placeholder="rohini@studiomehta.com"
                           className="w-full border border-line bg-paper px-4 py-3 text-[13px] text-ink focus:border-brass focus:outline-none"
                         />
@@ -192,6 +257,8 @@ export default function AgencyContactClient() {
                         </label>
                         <input
                           type="tel"
+                          value={formData.phone}
+                          onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                           placeholder="+91 98200 00000"
                           className="w-full border border-line bg-paper px-4 py-3 text-[13px] text-ink focus:border-brass focus:outline-none"
                         />
@@ -205,6 +272,8 @@ export default function AgencyContactClient() {
                         </label>
                         <input
                           type="url"
+                          value={formData.website}
+                          onChange={(e) => setFormData({ ...formData, website: e.target.value })}
                           placeholder="https://studiomehta.com"
                           className="w-full border border-line bg-paper px-4 py-3 text-[13px] text-ink focus:border-brass focus:outline-none"
                         />
@@ -215,6 +284,8 @@ export default function AgencyContactClient() {
                         </label>
                         <input
                           type="text"
+                          value={formData.location}
+                          onChange={(e) => setFormData({ ...formData, location: e.target.value })}
                           placeholder="e.g. Mumbai / New Delhi / Bengaluru / Dubai"
                           className="w-full border border-line bg-paper px-4 py-3 text-[13px] text-ink focus:border-brass focus:outline-none"
                         />
@@ -226,7 +297,11 @@ export default function AgencyContactClient() {
                         <label className="block font-mono text-[10px] uppercase tracking-wider text-taupe mb-2">
                           Target Package
                         </label>
-                        <select className="w-full border border-line bg-paper px-4 py-3 text-[13px] text-ink focus:border-brass focus:outline-none">
+                        <select
+                          value={formData.package}
+                          onChange={(e) => setFormData({ ...formData, package: e.target.value })}
+                          className="w-full border border-line bg-paper px-4 py-3 text-[13px] text-ink focus:border-brass focus:outline-none"
+                        >
                           <option>Signature Platform (₹2,75,000 / $3,450) — Most Popular</option>
                           <option>Studio Showcase (₹1,45,000 / $1,850)</option>
                           <option>Flagship Bespoke Architecture (₹4,50,000+ / $5,500+)</option>
@@ -237,7 +312,11 @@ export default function AgencyContactClient() {
                         <label className="block font-mono text-[10px] uppercase tracking-wider text-taupe mb-2">
                           Estimated Timeline
                         </label>
-                        <select className="w-full border border-line bg-paper px-4 py-3 text-[13px] text-ink focus:border-brass focus:outline-none">
+                        <select
+                          value={formData.timeline}
+                          onChange={(e) => setFormData({ ...formData, timeline: e.target.value })}
+                          className="w-full border border-line bg-paper px-4 py-3 text-[13px] text-ink focus:border-brass focus:outline-none"
+                        >
                           <option>Within 4 Weeks</option>
                           <option>1–3 Months</option>
                           <option>Flexible / Planning Ahead</option>
@@ -251,6 +330,8 @@ export default function AgencyContactClient() {
                       </label>
                       <textarea
                         rows={4}
+                        value={formData.goals}
+                        onChange={(e) => setFormData({ ...formData, goals: e.target.value })}
                         placeholder="Tell us about the features you need — e.g. custom cost calculator, drawing plate switcher, multi-city SEO, e-commerce shop, or full studio rebrand."
                         className="w-full border border-line bg-paper p-4 text-[13px] text-ink focus:border-brass focus:outline-none"
                       />
@@ -258,9 +339,10 @@ export default function AgencyContactClient() {
 
                     <button
                       type="submit"
-                      className="w-full btn-fill py-4 text-[11px] uppercase tracking-luxe font-medium transition-all"
+                      disabled={loading}
+                      className="w-full btn-fill py-4 text-[11px] uppercase tracking-luxe font-medium transition-all disabled:opacity-50"
                     >
-                      Submit Studio Inquiry &amp; Request Proposal
+                      {loading ? "Transmitting Studio Inquiry..." : "Submit Studio Inquiry & Request Proposal"}
                     </button>
                   </form>
                 )}

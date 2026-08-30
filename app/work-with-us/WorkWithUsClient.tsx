@@ -46,6 +46,17 @@ const faqs = [
 export default function WorkWithUsClient() {
   const [submitted, setSubmitted] = useState(false);
   const [openFaq, setOpenFaq] = useState<number | null>(null);
+  const [homeLoading, setHomeLoading] = useState(false);
+  const [homeError, setHomeError] = useState("");
+  const [homeFormData, setHomeFormData] = useState({
+    name: "",
+    studio: "",
+    email: "",
+    phone: "",
+    package: "Signature Platform (₹2,75,000 / $3,450)",
+    timeline: "Within 4 Weeks",
+    goals: "",
+  });
 
   return (
     <div className="min-h-screen bg-paper text-ink">
@@ -111,7 +122,7 @@ export default function WorkWithUsClient() {
                   Lumière Interiors: A Living Demonstration
                 </h2>
                 <p className="mt-4 text-[14px] leading-relaxed text-taupe font-sans">
-                  We engineered Lumière Interiors as a comprehensive demonstration of what an elite architectural website should be in 2026. Featuring <strong>72 production routes</strong>, a 60fps cinematic 3D scroll canvas hero, interactive BHK cost calculators, drawing plate switchers, and multi-city programmatic SEO hubs.
+                  We engineered Lumière Interiors as a comprehensive demonstration of what an elite architectural website should be in 2026. Featuring <strong>82 production routes</strong>, a 60fps cinematic 3D scroll canvas hero, interactive BHK cost calculators, drawing plate switchers, and multi-city programmatic SEO hubs.
                 </p>
 
                 <div className="mt-8 flex flex-wrap items-center gap-4">
@@ -133,9 +144,9 @@ export default function WorkWithUsClient() {
               {/* Stats Mini Grid */}
               <div className="lg:col-span-5 grid grid-cols-2 gap-4">
                 <div className="rounded-xs border border-line bg-paper p-5">
-                  <span className="font-serif text-3xl italic text-brass block">72</span>
+                  <span className="font-serif text-3xl italic text-brass block">82</span>
                   <span className="font-mono text-[10px] uppercase text-taupe block mt-1">
-                    Static / SSG Routes
+                    Production Routes
                   </span>
                 </div>
                 <div className="rounded-xs border border-line bg-paper p-5">
@@ -439,22 +450,62 @@ export default function WorkWithUsClient() {
                 </p>
 
                 {submitted ? (
-                  <div className="mt-8 rounded-xs border border-brass/40 bg-brass/10 p-6 text-center">
-                    <h4 className="font-serif text-xl italic text-ink">
-                      Inquiry Received
+                  <div className="mt-8 rounded-xs border border-brass/40 bg-brass/10 p-8 text-center animate-in fade-in duration-300">
+                    <h4 className="font-serif text-2xl italic text-ink">
+                      Inquiry Received Successfully
                     </h4>
-                    <p className="mt-2 text-[13px] text-taupe">
-                      Thank you! Swapnil will review your studio details and reach out with a tailored proposal within 24 business hours.
+                    <p className="mt-3 text-[14px] text-taupe leading-relaxed">
+                      Thank you! Your studio details have been routed to Swapnil. We will review your requirements and send a tailored proposal within 24 business hours.
                     </p>
+                    <div className="mt-6 flex flex-wrap items-center justify-center gap-4">
+                      <a
+                        href={`https://wa.me/918605832851?text=${encodeURIComponent(
+                          `Hi Swapnil, I submitted a website inquiry on Automate Reality Labs for ${homeFormData.studio || "our design studio"}.\n\nName: ${homeFormData.name}\nEmail: ${homeFormData.email}\nPackage: ${homeFormData.package}`,
+                        )}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="btn-fill px-6 py-2.5 text-[10px] uppercase tracking-luxe"
+                      >
+                        Message on WhatsApp Now ↗
+                      </a>
+                    </div>
                   </div>
                 ) : (
                   <form
-                    onSubmit={(e) => {
+                    onSubmit={async (e) => {
                       e.preventDefault();
-                      setSubmitted(true);
+                      setHomeLoading(true);
+                      setHomeError("");
+                      try {
+                        const res = await fetch("/api/contact", {
+                          method: "POST",
+                          headers: { "Content-Type": "application/json" },
+                          body: JSON.stringify({
+                            ...homeFormData,
+                            source: "Agency Overview Page (/work-with-us)",
+                          }),
+                        });
+                        const data = await res.json();
+                        if (!res.ok) throw new Error(data.error || "Submission failed");
+                        setSubmitted(true);
+                      } catch (err: unknown) {
+                        setHomeError(
+                          err instanceof Error
+                            ? err.message
+                            : "Failed to submit. Please contact Swapnil directly.",
+                        );
+                      } finally {
+                        setHomeLoading(false);
+                      }
                     }}
                     className="mt-8 space-y-5"
                   >
+                    {homeError && (
+                      <div className="rounded-xs border border-red-500/40 bg-red-500/10 p-4 text-[12px] text-red-600 font-mono">
+                        {homeError}
+                      </div>
+                    )}
+
                     <div className="grid gap-5 sm:grid-cols-2">
                       <div>
                         <label className="block font-mono text-[10px] uppercase tracking-wider text-taupe mb-2">
@@ -463,6 +514,8 @@ export default function WorkWithUsClient() {
                         <input
                           type="text"
                           required
+                          value={homeFormData.name}
+                          onChange={(e) => setHomeFormData({ ...homeFormData, name: e.target.value })}
                           placeholder="e.g. Maya Advani"
                           className="w-full border border-line bg-paper-2 px-4 py-3 text-[13px] text-ink focus:border-brass focus:outline-none"
                         />
@@ -474,6 +527,8 @@ export default function WorkWithUsClient() {
                         <input
                           type="text"
                           required
+                          value={homeFormData.studio}
+                          onChange={(e) => setHomeFormData({ ...homeFormData, studio: e.target.value })}
                           placeholder="e.g. Advani Architects"
                           className="w-full border border-line bg-paper-2 px-4 py-3 text-[13px] text-ink focus:border-brass focus:outline-none"
                         />
@@ -488,6 +543,8 @@ export default function WorkWithUsClient() {
                         <input
                           type="email"
                           required
+                          value={homeFormData.email}
+                          onChange={(e) => setHomeFormData({ ...homeFormData, email: e.target.value })}
                           placeholder="maya@advanidesign.com"
                           className="w-full border border-line bg-paper-2 px-4 py-3 text-[13px] text-ink focus:border-brass focus:outline-none"
                         />
@@ -498,6 +555,8 @@ export default function WorkWithUsClient() {
                         </label>
                         <input
                           type="tel"
+                          value={homeFormData.phone}
+                          onChange={(e) => setHomeFormData({ ...homeFormData, phone: e.target.value })}
                           placeholder="+91 98200 00000"
                           className="w-full border border-line bg-paper-2 px-4 py-3 text-[13px] text-ink focus:border-brass focus:outline-none"
                         />
@@ -509,9 +568,13 @@ export default function WorkWithUsClient() {
                         <label className="block font-mono text-[10px] uppercase tracking-wider text-taupe mb-2">
                           Desired Package
                         </label>
-                        <select className="w-full border border-line bg-paper-2 px-4 py-3 text-[13px] text-ink focus:border-brass focus:outline-none">
+                        <select
+                          value={homeFormData.package}
+                          onChange={(e) => setHomeFormData({ ...homeFormData, package: e.target.value })}
+                          className="w-full border border-line bg-paper-2 px-4 py-3 text-[13px] text-ink focus:border-brass focus:outline-none"
+                        >
+                          <option>Signature Platform (₹2,75,000 / $3,450) — Most Popular</option>
                           <option>Studio Showcase (₹1,45,000 / $1,850)</option>
-                          <option>Signature Platform (₹2,75,000 / $3,450)</option>
                           <option>Flagship Bespoke Architecture (₹4,50,000+ / $5,500+)</option>
                           <option>Custom Scope Consultation</option>
                         </select>
@@ -520,7 +583,11 @@ export default function WorkWithUsClient() {
                         <label className="block font-mono text-[10px] uppercase tracking-wider text-taupe mb-2">
                           Target Launch Timeline
                         </label>
-                        <select className="w-full border border-line bg-paper-2 px-4 py-3 text-[13px] text-ink focus:border-brass focus:outline-none">
+                        <select
+                          value={homeFormData.timeline}
+                          onChange={(e) => setHomeFormData({ ...homeFormData, timeline: e.target.value })}
+                          className="w-full border border-line bg-paper-2 px-4 py-3 text-[13px] text-ink focus:border-brass focus:outline-none"
+                        >
                           <option>Immediate (Within 4 weeks)</option>
                           <option>Next Quarter (1–3 months)</option>
                           <option>Flexible / Exploring Ideas</option>
@@ -534,6 +601,8 @@ export default function WorkWithUsClient() {
                       </label>
                       <textarea
                         rows={4}
+                        value={homeFormData.goals}
+                        onChange={(e) => setHomeFormData({ ...homeFormData, goals: e.target.value })}
                         placeholder="Tell us what you want to achieve — e.g. rebrand our portfolio, add an interactive cost calculator, rank for local Mumbai luxury interior searches, or launch a shop."
                         className="w-full border border-line bg-paper-2 p-4 text-[13px] text-ink focus:border-brass focus:outline-none"
                       />
@@ -541,9 +610,10 @@ export default function WorkWithUsClient() {
 
                     <button
                       type="submit"
-                      className="w-full btn-fill py-4 text-[11px] uppercase tracking-luxe font-medium transition-all"
+                      disabled={homeLoading}
+                      className="w-full btn-fill py-4 text-[11px] uppercase tracking-luxe font-medium transition-all disabled:opacity-50"
                     >
-                      Submit Studio Inquiry &amp; Request Proposal
+                      {homeLoading ? "Transmitting Inquiry..." : "Submit Studio Inquiry & Request Proposal"}
                     </button>
                   </form>
                 )}
