@@ -8,11 +8,13 @@ import { nav, studio } from "@/lib/site";
 
 export default function Navbar() {
   const progressRef = useRef<HTMLDivElement>(null);
+  const navRef = useRef<HTMLElement>(null);
   const indicatorRef = useRef<HTMLDivElement>(null);
   const [open, setOpen] = useState(false);
   const reduced = usePrefersReducedMotion();
   const pathname = usePathname();
 
+  // Scroll progress bar
   useLayoutEffect(() => {
     if (!progressRef.current || reduced) return;
     const ctx = gsap.context(() => {
@@ -29,49 +31,19 @@ export default function Navbar() {
     return () => ctx.revert();
   }, [reduced]);
 
-  // Active section tracking — brass indicator slides between nav items
-  useLayoutEffect(() => {
+  // Position brass indicator under a specific link element
+  const positionIndicator = (target: HTMLElement | null, instant = false) => {
     const indicator = indicatorRef.current;
-    if (!indicator || reduced) return;
+    const navEl = navRef.current;
+    if (!indicator || !navEl) return;
 
-    const sections = nav
-      .map((item) => {
-        const id = item.href.startsWith("#") ? item.href.slice(1) : item.href.slice(1);
-        const el = document.getElementById(id);
-        return el ? { item, el, id } : null;
-      })
-      .filter(Boolean) as { item: typeof nav[0]; el: HTMLElement; id: string }[];
+    if (!target) {
+      indicator.style.opacity = "0";
+      return;
+    }
 
-    if (sections.length === 0) return;
-
-    const ctx = gsap.context(() => {
-      sections.forEach(({ item, el }) => {
-        ScrollTrigger.create({
-          trigger: el,
-          start: "top center",
-          end: "bottom center",
-          onEnter: () => moveTo(item.href),
-          onEnterBack: () => moveTo(item.href),
-        });
-      });
-
-      // initial position based on current path
-      const current = sections.find((s) => `/${s.id}` === pathname || `#${s.id}` === pathname);
-      if (current) moveTo(current.item.href, true);
-    });
-
-    return () => ctx.revert();
-  }, [reduced, pathname]);
-
-  const moveTo = (href: string, instant = false) => {
-    const indicator = indicatorRef.current;
-    if (!indicator) return;
-    const target = document.querySelector(`a[href="${href}"]`);
-    if (!target) return;
     const rect = target.getBoundingClientRect();
-    const navRect = target.parentElement?.getBoundingClientRect();
-    if (!navRect) return;
-
+    const navRect = navEl.getBoundingClientRect();
     const x = rect.left - navRect.left;
     const w = rect.width;
 
@@ -84,11 +56,84 @@ export default function Navbar() {
         x,
         width: w,
         opacity: 1,
-        duration: 0.45,
+        duration: 0.35,
         ease: "power3.out",
       });
     }
   };
+
+  // Active route tracking
+  useLayoutEffect(() => {
+    const indicator = indicatorRef.current;
+    const navEl = navRef.current;
+    if (!indicator || !navEl) return;
+
+    if (reduced) {
+      indicator.style.opacity = "0";
+      return;
+    }
+
+    // Match the active nav item by pathname
+    const activeIdx = nav.findIndex((item) => {
+      const cleanHref = item.href.split("#")[0];
+      if (cleanHref === pathname) return true;
+      if (cleanHref !== "/" && pathname.startsWith(cleanHref)) return true;
+      return false;
+    });
+
+    if (activeIdx !== -1) {
+      const targetEl = navEl.querySelector(`[data-nav-idx="${activeIdx}"]`) as HTMLElement;
+      if (targetEl) {
+        positionIndicator(targetEl, true);
+      } else {
+        indicator.style.opacity = "0";
+      }
+    } else {
+      indicator.style.opacity = "0";
+    }
+
+    // On homepage, track on-page sections if present
+    if (pathname === "/") {
+      const ctx = gsap.context(() => {
+        nav.forEach((item, idx) => {
+          const id = item.href.replace(/^\//, "");
+          const el = document.getElementById(id);
+          if (el) {
+            ScrollTrigger.create({
+              trigger: el,
+              start: "top center",
+              end: "bottom center",
+              onEnter: () => {
+                const target = navEl.querySelector(`[data-nav-idx="${idx}"]`) as HTMLElement;
+                positionIndicator(target);
+              },
+              onEnterBack: () => {
+                const target = navEl.querySelector(`[data-nav-idx="${idx}"]`) as HTMLElement;
+                positionIndicator(target);
+              },
+              onLeaveBack: () => {
+                if (window.scrollY < 300) {
+                  indicator.style.opacity = "0";
+                }
+              },
+            });
+          }
+        });
+      });
+
+      return () => ctx.revert();
+    }
+
+    // Window resize handler to reposition indicator
+    const handleResize = () => {
+      if (activeIdx !== -1) {
+        const targetEl = navEl.querySelector(`[data-nav-idx="${activeIdx}"]`) as HTMLElement;
+        if (targetEl) positionIndicator(targetEl, true);
+      }
+    };
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, [reduced, pathname]);
 
   useEffect(() => {
     if (!open) return;
@@ -120,26 +165,49 @@ export default function Navbar() {
             {studio.name}
           </Link>
 
-          <nav className="hidden items-center gap-8 md:flex relative" aria-label="Primary">
+          <nav
+            ref={navRef}
+            className="hidden items-center gap-8 md:flex relative"
+            aria-label="Primary"
+          >
             {/* active indicator */}
             <div
               ref={indicatorRef}
-              className="absolute -bottom-1 left-0 h-px bg-brass transition-all duration-500 ease-[cubic-bezier(0.65,0,0.35,1)] origin-center opacity-0 pointer-events-none"
+              className="absolute -bottom-1 left-0 h-px bg-brass transition-all duration-300 ease-out origin-center opacity-0 pointer-events-none"
               aria-hidden="true"
             />
-            {nav.map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                className="group relative text-[11px] uppercase tracking-luxe text-paper/75 transition-colors duration-300 hover:text-paper"
-              >
-                {item.label}
-                <span className="absolute -bottom-1 left-0 h-px w-0 bg-brass transition-all duration-500 ease-[cubic-bezier(0.65,0,0.35,1)] group-hover:w-full" />
-              </Link>
-            ))}
+            {nav.map((item, idx) => {
+              const cleanHref = item.href.split("#")[0];
+              const isActive =
+                cleanHref === pathname ||
+                (cleanHref !== "/" && pathname.startsWith(cleanHref));
+
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  data-nav-idx={idx}
+                  data-nav-label={item.label}
+                  className={`group relative text-[11px] uppercase tracking-luxe transition-colors duration-300 ${
+                    isActive ? "text-paper" : "text-paper/75 hover:text-paper"
+                  }`}
+                >
+                  {item.label}
+                  <span className="absolute -bottom-1 left-0 h-px w-0 bg-brass transition-all duration-500 ease-[cubic-bezier(0.65,0,0.35,1)] group-hover:w-full" />
+                </Link>
+              );
+            })}
           </nav>
 
-          <div className="flex items-center gap-6">
+          <div className="flex items-center gap-4 md:gap-5">
+            <Link
+              href="/work-with-us"
+              className="inline-flex items-center gap-2 rounded-full border border-brass/40 bg-brass/15 px-3.5 py-1.5 font-mono text-[10px] uppercase tracking-wider text-paper backdrop-blur-md transition-all duration-300 hover:border-brass hover:bg-brass hover:text-ink hover:scale-105"
+            >
+              <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
+              <span>Work With Us</span>
+            </Link>
+
             <Link
               href="/contact"
               className="hidden btn-fill relative px-6 py-2.5 text-[11px] uppercase tracking-luxe transition-colors duration-300 md:inline"
@@ -194,15 +262,30 @@ export default function Navbar() {
             </Link>
           ))}
         </nav>
-        <div className="flex items-end justify-between border-t border-line-light pt-6">
-          <div>
-            <p className="text-[11px] uppercase tracking-luxe text-stone">New business</p>
-            <a
-              href="mailto:hello@lumiere-interiors.studio"
-              className="mt-1 block font-serif text-lg italic text-paper"
-            >
-              hello@lumiere-interiors.studio
-            </a>
+        <div className="flex flex-col gap-4 border-t border-line-light pt-6">
+          <Link
+            href="/work-with-us"
+            onClick={close}
+            className="flex items-center justify-between rounded-xs border border-brass/50 bg-brass/10 px-4 py-3 text-paper transition-all hover:bg-brass hover:text-ink"
+          >
+            <div className="flex items-center gap-2">
+              <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
+              <span className="font-mono text-[11px] uppercase tracking-wider">
+                Work With Us (Agency / Web Studio)
+              </span>
+            </div>
+            <span className="font-mono text-[11px]">↗</span>
+          </Link>
+          <div className="flex items-end justify-between">
+            <div>
+              <p className="text-[11px] uppercase tracking-luxe text-stone">New business</p>
+              <a
+                href="mailto:hello@lumiere-interiors.studio"
+                className="mt-1 block font-serif text-lg italic text-paper"
+              >
+                hello@lumiere-interiors.studio
+              </a>
+            </div>
           </div>
         </div>
       </div>

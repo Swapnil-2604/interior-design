@@ -61,8 +61,28 @@ export default function Footer() {
             &copy; {new Date().getFullYear()} {studio.name}
           </span>
           <span className="text-[10px] uppercase tracking-luxe text-taupe">
-            Los Angeles &middot; Lyon &middot; Lisbon
+            Mumbai &middot; New Delhi &middot; Bengaluru &middot; Hyderabad &middot; Goa
           </span>
+        </div>
+
+        {/* Developer / Agency Attribution Credit Line */}
+        <div className="mt-4 border-t border-line/40 pt-4 flex flex-col gap-2 md:flex-row md:items-center md:justify-between text-[11px] text-taupe/80">
+          <span>
+            Concept site designed &amp; developed by{" "}
+            <Link
+              href="/work-with-us"
+              className="font-medium text-ink/90 underline decoration-line/80 hover:text-brass hover:decoration-brass transition-colors"
+            >
+              Automate Reality Labs
+            </Link>{" "}
+            — a demonstration built for interior design studios.
+          </span>
+          <Link
+            href="/work-with-us"
+            className="font-mono text-[10px] uppercase tracking-wider text-ink/80 hover:text-brass transition-colors"
+          >
+            Work with us →
+          </Link>
         </div>
       </div>
     </footer>
