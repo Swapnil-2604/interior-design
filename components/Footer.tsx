@@ -1,7 +1,17 @@
+"use client";
+
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { contact, nav, studio } from "@/lib/site";
 
 export default function Footer() {
+  const pathname = usePathname();
+
+  // On agency micro-site pages, AgencyFooter in layout takes over
+  if (pathname.startsWith("/work-with-us")) {
+    return null;
+  }
+
   return (
     <footer className="bg-paper text-ink">
       <div className="mx-auto w-full max-w-[1440px] px-6 py-14 md:px-10 md:py-20 lg:px-16">
@@ -44,45 +54,45 @@ export default function Footer() {
             >
               {contact.email}
             </a>
-            {contact.socials.map((s) => (
-              <a
-                key={s.label}
-                href={s.href}
-                className="w-fit text-[13px] text-ink/70 transition-colors hover:text-ink"
-              >
-                {s.label}
-              </a>
-            ))}
+            <a
+              href={`tel:${contact.phone.replace(/\s+/g, "")}`}
+              className="w-fit text-[13px] text-ink/70 transition-colors hover:text-ink"
+            >
+              {contact.phone}
+            </a>
+            <span className="text-[11px] leading-relaxed text-taupe">
+              {contact.address}
+            </span>
           </div>
         </div>
 
-        <div className="mt-16 flex flex-col gap-3 border-t border-line pt-6 md:flex-row md:items-center md:justify-between">
-          <span className="text-[10px] uppercase tracking-luxe text-taupe">
-            &copy; {new Date().getFullYear()} {studio.name}
-          </span>
-          <span className="text-[10px] uppercase tracking-luxe text-taupe">
-            Mumbai &middot; New Delhi &middot; Bengaluru &middot; Hyderabad &middot; Goa
-          </span>
+        <div className="mt-14 flex flex-col gap-4 border-t border-line pt-8 text-[11px] uppercase tracking-luxe text-taupe md:flex-row md:items-center md:justify-between">
+          <span>&copy; {new Date().getFullYear()} {studio.name}. All rights reserved.</span>
+          <div className="flex gap-6">
+            <span>Bespoke Interiors</span>
+            <span>Turnkey Execution</span>
+            <span>Spatial Architecture</span>
+          </div>
         </div>
 
-        {/* Developer / Agency Attribution Credit Line */}
-        <div className="mt-4 border-t border-line/40 pt-4 flex flex-col gap-2 md:flex-row md:items-center md:justify-between text-[11px] text-taupe/80">
-          <span>
+        {/* Developer Attribution Credit Line */}
+        <div className="mt-6 border-t border-line/50 pt-4 text-center">
+          <p className="text-[11px] font-mono text-stone hover:text-taupe transition-colors">
             Concept site designed &amp; developed by{" "}
             <Link
               href="/work-with-us"
-              className="font-medium text-ink/90 underline decoration-line/80 hover:text-brass hover:decoration-brass transition-colors"
+              className="text-brass underline hover:text-ink transition-colors font-medium"
             >
               Automate Reality Labs
             </Link>{" "}
-            — a demonstration built for interior design studios.
-          </span>
-          <Link
-            href="/work-with-us"
-            className="font-mono text-[10px] uppercase tracking-wider text-ink/80 hover:text-brass transition-colors"
-          >
-            Work with us →
-          </Link>
+            — a demonstration built for interior design studios.{" "}
+            <Link
+              href="/work-with-us"
+              className="text-brass hover:underline transition-colors font-medium ml-1"
+            >
+              Work with us &rarr;
+            </Link>
+          </p>
         </div>
       </div>
     </footer>

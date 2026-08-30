@@ -14,6 +14,11 @@ export default function Navbar() {
   const reduced = usePrefersReducedMotion();
   const pathname = usePathname();
 
+  // On agency section, AgencyNav in layout takes over
+  if (pathname.startsWith("/work-with-us")) {
+    return null;
+  }
+
   // Scroll progress bar
   useLayoutEffect(() => {
     if (!progressRef.current || reduced) return;
