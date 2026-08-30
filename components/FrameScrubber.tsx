@@ -1,15 +1,9 @@
 "use client";
 
-import { useLayoutEffect, useRef, useState, useCallback } from "react";
+import { useEffect, useRef, useCallback } from "react";
 import { gsap, ScrollTrigger, usePrefersReducedMotion } from "@/lib/animations";
 import { studio } from "@/lib/site";
 import TextReveal from "./TextReveal";
-
-/* ── frame-sequence hero ────────────────────────────────────────────────
-   Drop-in replacement for the video scrubber: 300 PNGs (frame-0001 …
-   frame-0300) preloaded as Image objects, drawn via <img> src-swap in
-   sync with GSAP ScrollTrigger.  Same visual language, same copy,
-   same animations. */
 
 const TOTAL_FRAMES = 300;
 const framePath = (i: number) =>
@@ -17,170 +11,207 @@ const framePath = (i: number) =>
 
 export default function FrameScrubber() {
   const runwayRef = useRef<HTMLDivElement>(null);
-  const imgRef = useRef<HTMLImageElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
   const copyRef = useRef<HTMLDivElement>(null);
   const reduced = usePrefersReducedMotion();
-  const [ready, setReady] = useState(false);
 
-  /* frame cache: index → preloaded Image */
-  const cacheRef = useRef<Map<number, HTMLImageElement>>(new Map());
-  const lastIdx = useRef(-1);
+  // Array of 300 preloaded HTMLImageElements
+  const imagesRef = useRef<(HTMLImageElement | null)[]>([]);
+  const currentFrameRef = useRef(0);
 
-  /* Helper to trigger load of a single frame */
-  const loadSingleFrame = useCallback((i: number): HTMLImageElement => {
-    const existing = cacheRef.current.get(i);
-    if (existing) return existing;
+  // Helper to load a single frame on-demand if not already loading
+  const loadFrame = useCallback((index: number) => {
+    const images = imagesRef.current;
+    if (images[index]) return images[index]!;
 
     const img = new Image();
-    img.src = framePath(i);
+    img.src = framePath(index);
     img.onload = () => {
-      if (lastIdx.current === i && imgRef.current) {
-        imgRef.current.src = img.src;
+      if (
+        currentFrameRef.current === index ||
+        (index === 0 && currentFrameRef.current === 0)
+      ) {
+        drawFrame(currentFrameRef.current);
       }
     };
-    cacheRef.current.set(i, img);
+    images[index] = img;
     return img;
   }, []);
 
-  /* ── instant first-frame load + progressive background streaming ────── */
-  useLayoutEffect(() => {
-    let cancelled = false;
-    const cache = cacheRef.current;
+  // Draws a specific frame to the canvas with high-DPI crispness and cover fit
+  const drawFrame = useCallback((frameIndex: number) => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
 
-    // 1. Instantly load initial frame 0 to mark page ready without waiting
-    const frame0 = new Image();
-    frame0.src = framePath(0);
-    const onFrame0Load = () => {
-      if (cancelled) return;
-      cache.set(0, frame0);
-      setReady(true);
-      ScrollTrigger.refresh();
-    };
+    currentFrameRef.current = frameIndex;
 
-    if (frame0.complete) {
-      onFrame0Load();
-    } else {
-      frame0.onload = onFrame0Load;
-    }
+    // Load requested frame and adjacent frames on-demand
+    loadFrame(frameIndex);
+    if (frameIndex + 1 < TOTAL_FRAMES) loadFrame(frameIndex + 1);
+    if (frameIndex - 1 >= 0) loadFrame(frameIndex - 1);
 
-    // 2. Build prioritized background loading queue (keyframes first, then remainder)
-    const loadQueue: number[] = [];
-    for (let i = 1; i < TOTAL_FRAMES; i += 5) {
-      loadQueue.push(i);
-    }
-    for (let i = 1; i < TOTAL_FRAMES; i++) {
-      if (i % 5 !== 0) loadQueue.push(i);
-    }
+    // Find target image or nearest loaded frame
+    const images = imagesRef.current;
+    let targetImg = images[frameIndex];
 
-    let qIdx = 0;
-    const BATCH = 15;
-    const loadNextBatch = () => {
-      if (cancelled || qIdx >= loadQueue.length) return;
-      const end = Math.min(qIdx + BATCH, loadQueue.length);
-      for (let i = qIdx; i < end; i++) {
-        const idx = loadQueue[i];
-        if (!cache.has(idx)) {
-          const img = new Image();
-          img.src = framePath(idx);
-          img.onload = () => {
-            if (!cancelled) cache.set(idx, img);
-          };
-          cache.set(idx, img);
+    if (!targetImg || !targetImg.complete || targetImg.naturalWidth === 0) {
+      let bestDist = Infinity;
+      for (let i = 0; i < TOTAL_FRAMES; i++) {
+        const img = images[i];
+        if (img && img.complete && img.naturalWidth > 0) {
+          const dist = Math.abs(i - frameIndex);
+          if (dist < bestDist) {
+            bestDist = dist;
+            targetImg = img;
+          }
         }
       }
-      qIdx = end;
-      if (qIdx < loadQueue.length) {
-        requestAnimationFrame(loadNextBatch);
-      }
-    };
+    }
 
-    requestAnimationFrame(loadNextBatch);
-
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
-  /* ── draw a frame with fallback to nearest cached frame ───────────── */
-  const showFrame = useCallback((index: number) => {
-    const img = imgRef.current;
-    if (!img) return;
-    lastIdx.current = index;
-
-    const frame = cacheRef.current.get(index);
-    if (frame && frame.complete && frame.naturalWidth > 0) {
-      img.src = frame.src;
+    if (!targetImg || !targetImg.complete || targetImg.naturalWidth === 0) {
       return;
     }
 
-    // Trigger load for missing frame
-    loadSingleFrame(index);
+    // High-DPI canvas resolution adjustment
+    const dpr = typeof window !== "undefined" ? Math.min(window.devicePixelRatio || 1, 2) : 1;
+    const displayWidth = canvas.clientWidth;
+    const displayHeight = canvas.clientHeight;
 
-    // Fallback to nearest complete frame in cache
-    let bestDist = Infinity;
-    let bestFrame: HTMLImageElement | null = null;
-    cacheRef.current.forEach((cachedImg, idx) => {
-      if (cachedImg.complete && cachedImg.naturalWidth > 0) {
-        const dist = Math.abs(idx - index);
-        if (dist < bestDist) {
-          bestDist = dist;
-          bestFrame = cachedImg;
-        }
-      }
-    });
-
-    if (bestFrame) {
-      img.src = (bestFrame as HTMLImageElement).src;
-    } else {
-      img.src = framePath(index);
+    if (
+      canvas.width !== displayWidth * dpr ||
+      canvas.height !== displayHeight * dpr
+    ) {
+      canvas.width = displayWidth * dpr;
+      canvas.height = displayHeight * dpr;
     }
-  }, [loadSingleFrame]);
 
-  /* ── reduced-motion: show a single static mid-frame ───────────────── */
-  useLayoutEffect(() => {
-    if (!reduced || !ready) return;
-    showFrame(Math.floor(TOTAL_FRAMES * 0.45));
-  }, [reduced, ready, showFrame]);
+    ctx.save();
+    ctx.scale(dpr, dpr);
 
-  /* ── show frame 0 when first ready ─────────────────────────────────── */
-  useLayoutEffect(() => {
-    if (ready && !reduced) showFrame(0);
-  }, [ready, reduced, showFrame]);
+    // Object-fit: cover algorithm
+    const imgRatio = targetImg.naturalWidth / targetImg.naturalHeight;
+    const canvasRatio = displayWidth / displayHeight;
 
-  /* ── main scrub + animation setup ──────────────────────────────────── */
-  useLayoutEffect(() => {
+    let drawW: number;
+    let drawH: number;
+    let drawX: number;
+    let drawY: number;
+
+    if (canvasRatio > imgRatio) {
+      drawW = displayWidth;
+      drawH = displayWidth / imgRatio;
+      drawX = 0;
+      drawY = (displayHeight - drawH) / 2;
+    } else {
+      drawW = displayHeight * imgRatio;
+      drawH = displayHeight;
+      drawX = (displayWidth - drawW) / 2;
+      drawY = 0;
+    }
+
+    ctx.clearRect(0, 0, displayWidth, displayHeight);
+    ctx.drawImage(targetImg, drawX, drawY, drawW, drawH);
+    ctx.restore();
+  }, [loadFrame]);
+
+  // Intelligent tiered background preloader
+  useEffect(() => {
+    let cancelled = false;
+    imagesRef.current = new Array(TOTAL_FRAMES).fill(null);
+
+    // Tier 1: Immediately load first 20 frames for instant initial scroll
+    for (let i = 0; i < 20; i++) {
+      loadFrame(i);
+    }
+
+    // Tier 2: Stream keyframes (every 4th frame) across the whole runway
+    const keyframesTimeout = setTimeout(() => {
+      if (cancelled) return;
+      for (let i = 20; i < TOTAL_FRAMES; i += 4) {
+        loadFrame(i);
+      }
+    }, 150);
+
+    // Tier 3: Stream all remaining frames progressively in chunked idle batches
+    const fullQueue: number[] = [];
+    for (let i = 20; i < TOTAL_FRAMES; i++) {
+      if (i % 4 !== 0) fullQueue.push(i);
+    }
+
+    let qIdx = 0;
+    const BATCH_SIZE = 12;
+
+    const streamNextBatch = () => {
+      if (cancelled || qIdx >= fullQueue.length) return;
+      const end = Math.min(qIdx + BATCH_SIZE, fullQueue.length);
+      for (let i = qIdx; i < end; i++) {
+        loadFrame(fullQueue[i]);
+      }
+      qIdx = end;
+      if (qIdx < fullQueue.length) {
+        setTimeout(streamNextBatch, 80);
+      }
+    };
+
+    const streamTimeout = setTimeout(streamNextBatch, 400);
+
+    // Initial frame 0 render check
+    const checkInitialFrame = () => {
+      const img0 = imagesRef.current[0];
+      if (img0 && img0.complete && img0.naturalWidth > 0) {
+        drawFrame(0);
+        ScrollTrigger.refresh();
+      } else {
+        requestAnimationFrame(checkInitialFrame);
+      }
+    };
+    checkInitialFrame();
+
+    const handleResize = () => {
+      drawFrame(currentFrameRef.current);
+    };
+    window.addEventListener("resize", handleResize);
+
+    return () => {
+      cancelled = true;
+      clearTimeout(keyframesTimeout);
+      clearTimeout(streamTimeout);
+      window.removeEventListener("resize", handleResize);
+    };
+  }, [loadFrame, drawFrame]);
+
+  // GSAP ScrollTrigger timeline for buttery-smooth frame scrubbing
+  useEffect(() => {
     const runway = runwayRef.current;
-    const img = imgRef.current;
+    const canvas = canvasRef.current;
     const copy = copyRef.current;
-    if (!runway || !img || !copy || reduced || !ready) return;
+    if (!runway || !canvas || !copy || reduced) return;
 
-    /* ── GSAP context ──────────────────────────────────────────────── */
+    const frameTracker = { frame: 0 };
+
     const ctx = gsap.context(() => {
-      /* ScrollTrigger: scroll progress → frame index with ease-in-out */
-      ScrollTrigger.create({
-        trigger: runway,
-        start: "top top",
-        end: "bottom bottom",
-        scrub: true,
-        onUpdate: (self) => {
-          const raw = self.progress;
-          /* smooth ease-in-out: slow start, even middle, slow finish */
-          const eased =
-            raw < 0.5
-              ? 2 * raw * raw
-              : 1 - (-2 * raw + 2) ** 2 / 2;
-          const index = Math.min(
-            Math.floor(eased * TOTAL_FRAMES),
-            TOTAL_FRAMES - 1,
-          );
-          if (index !== lastIdx.current) showFrame(index);
+      // Smooth 0 -> 299 scroll scrub
+      gsap.to(frameTracker, {
+        frame: TOTAL_FRAMES - 1,
+        ease: "none",
+        scrollTrigger: {
+          trigger: runway,
+          start: "top top",
+          end: "bottom bottom",
+          scrub: 0.12, // Butter-smooth interpolation
+          onUpdate: () => {
+            const target = Math.round(frameTracker.frame);
+            drawFrame(target);
+          },
         },
       });
 
-      /* A whisper of camera movement so the frame never feels frozen. */
+      // Subtle scale breathing
       gsap.fromTo(
-        img,
-        { scale: 1.06 },
+        canvas,
+        { scale: 1.05 },
         {
           scale: 1,
           ease: "none",
@@ -193,10 +224,10 @@ export default function FrameScrubber() {
         },
       );
 
-      /* Copy drifts up and away as the first scroll momentum builds. */
+      // Hero copy lifts and fades as first scroll starts
       gsap.to(copy, {
         autoAlpha: 0,
-        yPercent: -26,
+        yPercent: -28,
         ease: "none",
         scrollTrigger: {
           trigger: runway,
@@ -206,42 +237,41 @@ export default function FrameScrubber() {
         },
       });
 
-      /* Entrance: rise-in with a light stagger as the veil clears. */
+      // Hero text entrance animation
       gsap.from(copy.querySelectorAll<HTMLElement>("[data-hero]"), {
         autoAlpha: 0,
-        y: 26,
-        duration: 1.3,
+        y: 24,
+        duration: 1.2,
         ease: "power3.out",
-        stagger: 0.09,
-        delay: 0.15,
+        stagger: 0.08,
+        delay: 0.1,
         clearProps: "all",
       });
     }, runway);
 
-    /* ── cleanup ───────────────────────────────────────────────────── */
+    ScrollTrigger.refresh();
+
     return () => ctx.revert();
-  }, [reduced, ready, showFrame]);
+  }, [reduced, drawFrame]);
 
   return (
     <div
       id="top"
       ref={runwayRef}
-      className="hero-runway relative h-[500vh] sm:h-[700vh]"
+      className="hero-runway relative h-[500vh] sm:h-[650vh]"
     >
       <div className="sticky top-0 h-svh w-full overflow-hidden bg-ink">
-        <img
-          ref={imgRef}
-          src={framePath(0)}
-          alt=""
-          aria-hidden="true"
+        {/* High-Performance 60FPS Frame Canvas */}
+        <canvas
+          ref={canvasRef}
           className="pointer-events-none absolute inset-0 h-full w-full object-cover will-change-transform"
         />
 
-        {/* legibility scrims (functional, over the film frame only) */}
-        <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/55 via-black/5 to-black/30" />
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-44 bg-gradient-to-t from-ink/70 to-transparent" />
+        {/* Ambient Dark Gradient Scrims for Editorial Typography */}
+        <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-black/35" />
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-44 bg-gradient-to-t from-ink/75 to-transparent" />
 
-        {/* copy */}
+        {/* Hero Copy Overlay */}
         <div
           ref={copyRef}
           className="absolute inset-0 z-10 flex flex-col items-center justify-center px-6 text-center text-paper"
@@ -266,6 +296,7 @@ export default function FrameScrubber() {
               they <em className="font-serif font-light italic text-brass">feel</em>.
             </span>
           </TextReveal>
+
           <div
             data-hero
             className="absolute bottom-9 left-0 right-0 flex flex-col items-center gap-4"
@@ -276,12 +307,6 @@ export default function FrameScrubber() {
             <span className="scroll-indicator" aria-hidden="true" />
           </div>
         </div>
-
-        {/* loading veil */}
-        <div
-          aria-hidden="true"
-          className={`pointer-events-none absolute inset-0 z-20 bg-ink transition-opacity duration-700 ${ ready ? "opacity-0" : "opacity-100"}`}
-        />
       </div>
     </div>
   );
