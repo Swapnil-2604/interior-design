@@ -1,9 +1,19 @@
+"use client";
+
+import { useState } from "react";
 import Link from "next/link";
 import Reveal from "./Reveal";
 import TextReveal from "./TextReveal";
-import { blogPosts } from "@/lib/site";
+import { blogPosts, blogCategories } from "@/lib/site";
 
 export default function Journal() {
+  const [selectedCategory, setSelectedCategory] = useState<string>("All");
+
+  const filtered =
+    selectedCategory === "All"
+      ? blogPosts
+      : blogPosts.filter((p) => p.category === selectedCategory);
+
   return (
     <section id="journal" className="relative scroll-mt-24 bg-ink py-32 text-paper md:py-44">
       <div className="mx-auto w-full max-w-[1440px] px-6 md:px-10 lg:px-16">
@@ -11,7 +21,7 @@ export default function Journal() {
           <div className="flex items-center gap-5">
             <span className="font-mono text-[11px] text-stone">16</span>
             <span className="text-[11px] uppercase tracking-luxe text-stone">
-              Journal
+              Journal &amp; Field Notes
             </span>
             <span className="h-px flex-1 bg-line-light" />
           </div>
@@ -32,8 +42,28 @@ export default function Journal() {
           </Reveal>
         </div>
 
-        <div className="mt-16 grid gap-px border border-line-light bg-line-light md:mt-24 sm:grid-cols-2 lg:grid-cols-3">
-          {blogPosts.map((p, i) => (
+        {/* Category Filter Pills */}
+        <Reveal as="div" y={20} duration={1} start="top 92%">
+          <div className="mt-10 flex flex-wrap gap-2 border-b border-line-light pb-6">
+            {blogCategories.map((c) => (
+              <button
+                key={c}
+                type="button"
+                onClick={() => setSelectedCategory(c)}
+                className={`px-4 py-2 font-mono text-[10px] uppercase tracking-luxe transition-all duration-300 ${
+                  selectedCategory === c
+                    ? "bg-paper text-ink"
+                    : "border border-line-light text-stone hover:border-paper hover:text-paper"
+                }`}
+              >
+                {c}
+              </button>
+            ))}
+          </div>
+        </Reveal>
+
+        <div className="mt-12 grid gap-px border border-line-light bg-line-light sm:grid-cols-2 lg:grid-cols-3">
+          {filtered.map((p, i) => (
             <Reveal
               key={p.slug}
               as="div"
@@ -51,7 +81,7 @@ export default function Journal() {
                     {p.category}
                   </span>
                   <span className="font-mono text-[10px] text-stone">
-                    {String(i + 1).padStart(2, "0")}
+                    {p.readTime}
                   </span>
                 </div>
                 {/* Topic-matched image thumbnail */}
@@ -68,12 +98,12 @@ export default function Journal() {
                 <p className="mt-3 flex-1 text-[13px] leading-[1.7] text-stone">
                   {p.excerpt}
                 </p>
-                <span className="mt-6 inline-flex items-center gap-3 text-[11px] uppercase tracking-luxe text-paper/70 transition-colors duration-300 group-hover:text-brass">
-                  Read the note
-                  <span className="text-brass transition-transform duration-500 group-hover:translate-x-1">
-                    &#8594;
+                <div className="mt-6 flex items-center justify-between border-t border-line-light/50 pt-4 font-mono text-[10px] text-stone">
+                  <span>{p.date}</span>
+                  <span className="text-brass group-hover:translate-x-1 transition-transform">
+                    Read Note →
                   </span>
-                </span>
+                </div>
               </Link>
             </Reveal>
           ))}

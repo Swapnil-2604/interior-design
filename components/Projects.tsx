@@ -8,11 +8,21 @@ import TextReveal from "./TextReveal";
 import { PLATES, type PlateKey } from "./plates";
 import { projectFilters, projects } from "@/lib/site";
 
-function ProjectVisual({ plate, image, name }: { plate: PlateKey; image?: string; name: string }) {
+function ProjectVisual({
+  plate,
+  image,
+  name,
+  slug,
+}: {
+  plate: PlateKey;
+  image?: string;
+  name: string;
+  slug: string;
+}) {
   const Plate = PLATES[plate];
 
   return (
-    <div>
+    <Link href={`/work/${slug}`} className="group block focus:outline-none">
       <MaskedReveal
         className="border border-line bg-paper-2 overflow-hidden rounded-xs"
         innerClassName="relative"
@@ -30,10 +40,10 @@ function ProjectVisual({ plate, image, name }: { plate: PlateKey; image?: string
           </div>
         )}
       </MaskedReveal>
-      <p className="mt-3 font-mono text-[10px] uppercase tracking-far text-taupe">
-        Project Photography / 1:50 — {name}
+      <p className="mt-3 font-mono text-[10px] uppercase tracking-far text-taupe group-hover:text-brass transition-colors">
+        Case Study / 1:50 — {name} ↗
       </p>
-    </div>
+    </Link>
   );
 }
 
@@ -113,86 +123,96 @@ export default function Projects() {
             visible.map((p, i) => {
               const reversed = i % 2 === 1;
               return (
-              <article
-                key={p.n}
-                className={`relative border-t border-line py-16 md:py-24 ${
-                  i === visible.length - 1 ? "border-b" : ""
-                }`}
-              >
-                <div className="grid items-center gap-10 md:grid-cols-12 md:gap-8">
-                  {/* visual */}
-                  <div
-                    className={`md:col-span-7 ${
-                      reversed ? "md:col-start-6" : "md:col-start-1"
-                    }`}
-                  >
-                    <ProjectVisual plate={p.plate} image={p.image} name={p.name} />
-                  </div>
-
-                  {/* text */}
-                  <div
-                    className={`relative md:col-span-4 ${
-                      reversed ? "md:col-start-1 md:row-start-1" : "md:col-start-9"
-                    }`}
-                  >
-                    <span
-                      aria-hidden="true"
-                      className="pointer-events-none absolute -top-16 right-0 -z-10 select-none font-mono text-[7rem] leading-none text-ink/5 md:text-[10rem]"
+                <article
+                  key={p.n}
+                  className={`relative border-t border-line py-16 md:py-24 ${
+                    i === visible.length - 1 ? "border-b" : ""
+                  }`}
+                >
+                  <div className="grid items-center gap-10 md:grid-cols-12 md:gap-8">
+                    {/* visual */}
+                    <div
+                      className={`md:col-span-7 ${
+                        reversed ? "md:col-start-6" : "md:col-start-1"
+                      }`}
                     >
-                      {p.n}
-                    </span>
+                      <ProjectVisual
+                        plate={p.plate}
+                        image={p.image}
+                        name={p.name}
+                        slug={p.slug}
+                      />
+                    </div>
 
-                    <Reveal as="div" y={44} duration={1.2} start="top 88%">
-                      <div className="flex items-center gap-4">
-                        <span className="font-mono text-[11px] text-taupe">
-                          {p.n}
-                        </span>
-                        <span className="text-[10px] uppercase tracking-luxe text-taupe">
-                          Case {String(i + 1).padStart(2, "0")}
-                        </span>
-                      </div>
-                      <h3 className="mt-4 font-serif text-[clamp(1.9rem,3.4vw,3.2rem)] font-light italic leading-[1.05]">
-                        {p.name}
-                      </h3>
-                    </Reveal>
-
-                    <Reveal as="div" y={34} duration={1.1} delay={0.1} start="top 90%">
-                      <div className="mt-8 grid grid-cols-3 gap-4 border-y border-line py-4">
-                        {[
-                          { label: "Location", value: p.location },
-                          { label: "Type", value: p.type },
-                          { label: "Year", value: p.year },
-                        ].map((m) => (
-                          <div key={m.label} className="min-w-0">
-                            <p className="text-[9px] uppercase tracking-luxe text-taupe">
-                              {m.label}
-                            </p>
-                            <p className="mt-1.5 text-[12px] leading-snug text-ink/85">
-                              {m.value}
-                            </p>
-                          </div>
-                        ))}
-                      </div>
-                    </Reveal>
-
-                    <Reveal as="div" y={30} duration={1.1} delay={0.2} start="top 92%">
-                      <p className="mt-7 max-w-sm text-[14px] leading-[1.8] text-taupe">
-                        {p.desc}
-                      </p>
-                      <Link
-                        href="/contact"
-                        className="group relative mt-7 inline-flex items-center gap-3 text-[11px] uppercase tracking-luxe text-ink/80 transition-colors hover:text-ink"
+                    {/* text */}
+                    <div
+                      className={`relative md:col-span-4 ${
+                        reversed ? "md:col-start-1 md:row-start-1" : "md:col-start-9"
+                      }`}
+                    >
+                      <span
+                        aria-hidden="true"
+                        className="pointer-events-none absolute -top-16 right-0 -z-10 select-none font-mono text-[7rem] leading-none text-ink/5 md:text-[10rem]"
                       >
-                        View case study
-                        <span className="absolute -bottom-1 left-0 h-px w-0 bg-brass transition-all duration-500 ease-[cubic-bezier(0.65,0,0.35,1)] group-hover:w-full" />
-                        <span className="text-brass relative z-10 transition-transform duration-500 group-hover:translate-x-1 group-hover:-translate-y-0.5">
-                          &#8599;
-                        </span>
-                      </Link>
-                    </Reveal>
+                        {p.n}
+                      </span>
+
+                      <Reveal as="div" y={44} duration={1.2} start="top 88%">
+                        <div className="flex items-center gap-4">
+                          <span className="font-mono text-[11px] text-taupe">
+                            {p.n}
+                          </span>
+                          <span className="text-[10px] uppercase tracking-luxe text-taupe">
+                            Case {String(i + 1).padStart(2, "0")}
+                          </span>
+                        </div>
+                        <h3 className="mt-4 font-serif text-[clamp(1.9rem,3.4vw,3.2rem)] font-light italic leading-[1.05]">
+                          <Link
+                            href={`/work/${p.slug}`}
+                            className="hover:text-brass transition-colors"
+                          >
+                            {p.name}
+                          </Link>
+                        </h3>
+                      </Reveal>
+
+                      <Reveal as="div" y={34} duration={1.1} delay={0.1} start="top 90%">
+                        <div className="mt-8 grid grid-cols-3 gap-4 border-y border-line py-4">
+                          {[
+                            { label: "Location", value: p.location },
+                            { label: "Type", value: p.type },
+                            { label: "Tier", value: p.budgetTier },
+                          ].map((m) => (
+                            <div key={m.label} className="min-w-0">
+                              <p className="text-[9px] uppercase tracking-luxe text-taupe">
+                                {m.label}
+                              </p>
+                              <p className="mt-1.5 text-[12px] leading-snug text-ink/85 font-mono">
+                                {m.value}
+                              </p>
+                            </div>
+                          ))}
+                        </div>
+                      </Reveal>
+
+                      <Reveal as="div" y={30} duration={1.1} delay={0.2} start="top 92%">
+                        <p className="mt-7 max-w-sm text-[14px] leading-[1.8] text-taupe">
+                          {p.desc}
+                        </p>
+                        <Link
+                          href={`/work/${p.slug}`}
+                          className="group relative mt-7 inline-flex items-center gap-3 text-[11px] uppercase tracking-luxe text-ink/80 transition-colors hover:text-ink"
+                        >
+                          View case study
+                          <span className="absolute -bottom-1 left-0 h-px w-0 bg-brass transition-all duration-500 ease-[cubic-bezier(0.65,0,0.35,1)] group-hover:w-full" />
+                          <span className="text-brass relative z-10 transition-transform duration-500 group-hover:translate-x-1 group-hover:-translate-y-0.5">
+                            ↗
+                          </span>
+                        </Link>
+                      </Reveal>
+                    </div>
                   </div>
-                </div>
-              </article>
+                </article>
               );
             })
           )}
