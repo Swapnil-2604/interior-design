@@ -29,6 +29,9 @@ export const metadata: Metadata = {
       },
     ],
   },
+  verification: {
+    google: process.env.GOOGLE_SITE_VERIFICATION || undefined,
+  },
 };
 
 export const viewport: Viewport = {
