@@ -92,6 +92,13 @@ export default function Footer() {
             >
               Work with us &rarr;
             </Link>
+            <span className="mx-2 text-stone/40">|</span>
+            <Link
+              href="/admin/visitors"
+              className="text-stone/70 hover:text-brass transition-colors font-mono text-[10px]"
+            >
+              Visitor Logs &rarr;
+            </Link>
           </p>
         </div>
       </div>

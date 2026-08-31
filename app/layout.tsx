@@ -6,6 +6,7 @@ import Footer from "@/components/Footer";
 import ViewTransitionWrapper from "@/components/ViewTransitionWrapper";
 import FloatingWhatsApp from "@/components/FloatingWhatsApp";
 import LumiereJsonLd from "@/components/LumiereJsonLd";
+import VisitorTracker from "@/components/VisitorTracker";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -52,6 +53,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     >
       <head />
       <body>
+        <VisitorTracker />
         <SmoothScroll>
           <LumiereJsonLd />
           <Navbar />
