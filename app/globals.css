@@ -137,62 +137,42 @@
     }
   }
 
-  /* Luxury CTA: dark ink background with brass border and crisp paper text.
-     On hover, rich brass fill rises from bottom and text shifts to ink. */
+  /* Luxury CTA Button: Crisp dark ink background, gold/brass hairline border, crisp text */
   .btn-fill {
-    position: relative;
-    isolation: isolate;
-    overflow: hidden;
-    background: var(--ink);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--ink);
     border: 1px solid var(--brass);
-    color: var(--paper);
-    transition: color 0.4s cubic-bezier(0.65, 0, 0.35, 1), border-color 0.4s ease;
-  }
-  .btn-fill::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    z-index: -1;
-    background: var(--brass);
-    transform: translateY(101%);
-    transition: transform 0.45s cubic-bezier(0.65, 0, 0.35, 1);
-  }
-  .btn-fill:hover::before,
-  .btn-fill:focus-visible::before {
-    transform: translateY(0);
+    color: var(--paper) !important;
+    text-align: center;
+    cursor: pointer;
+    transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease, transform 0.2s ease;
   }
   .btn-fill:hover,
   .btn-fill:focus-visible {
-    color: var(--ink);
+    background-color: var(--brass);
     border-color: var(--brass);
+    color: var(--ink) !important;
   }
 
-  /* Inverse variant: paper background with ink border and ink text */
+  /* Light Variant */
   .btn-fill--light {
-    position: relative;
-    isolation: isolate;
-    overflow: hidden;
-    background: var(--paper);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--paper);
     border: 1px solid var(--ink);
-    color: var(--ink);
-    transition: color 0.4s cubic-bezier(0.65, 0, 0.35, 1);
-  }
-  .btn-fill--light::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    z-index: -1;
-    background: var(--ink);
-    transform: translateY(101%);
-    transition: transform 0.45s cubic-bezier(0.65, 0, 0.35, 1);
-  }
-  .btn-fill--light:hover::before,
-  .btn-fill--light:focus-visible::before {
-    transform: translateY(0);
+    color: var(--ink) !important;
+    text-align: center;
+    cursor: pointer;
+    transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease, transform 0.2s ease;
   }
   .btn-fill--light:hover,
   .btn-fill--light:focus-visible {
-    color: var(--paper);
+    background-color: var(--ink);
+    border-color: var(--ink);
+    color: var(--paper) !important;
   }
 
   /* View Transition: cross-fade between routes */
