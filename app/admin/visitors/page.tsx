@@ -78,6 +78,9 @@ export default function VisitorAnalyticsPage() {
             <div className="flex items-center gap-3 mb-2">
               <span className="inline-block w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
               <span className="text-xs uppercase tracking-widest text-[#c5a880] font-mono">Live Telemetry & Logs</span>
+              <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-[#1f1b17] border border-[#332c25] text-[#b0a597]">
+                {data?.storageType || "Connecting..."}
+              </span>
             </div>
             <h1 className="text-3xl sm:text-4xl font-serif tracking-tight text-[#fdfbf7]">
               Website Visitor Logs

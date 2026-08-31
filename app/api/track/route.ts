@@ -39,8 +39,8 @@ export async function POST(req: Request) {
       timeZone: body.timeZone || "Unknown",
     };
 
-    // Save visit log in the background
-    logVisitor(entry);
+    // Save visit log in background
+    await logVisitor(entry);
 
     return NextResponse.json({ success: true, recordedId: entry.id }, { status: 200 });
   } catch (error) {
@@ -56,7 +56,7 @@ export async function GET(req: Request) {
     const download = searchParams.get("download");
 
     if (download === "csv") {
-      const logs = readVisitorLogs();
+      const logs = await readVisitorLogs(5000);
       const headers = ["Timestamp", "IP Address", "Path", "Device", "OS", "Browser", "Referrer", "Visitor ID", "Screen Resolution", "Language", "Timezone"];
       const rows = logs.map((l) => [
         `"${l.timestamp}"`,
@@ -83,7 +83,7 @@ export async function GET(req: Request) {
     }
 
     if (download === "json") {
-      const logs = readVisitorLogs();
+      const logs = await readVisitorLogs(5000);
       return new Response(JSON.stringify(logs, null, 2), {
         headers: {
           "Content-Type": "application/json; charset=utf-8",
@@ -93,18 +93,18 @@ export async function GET(req: Request) {
     }
 
     if (summary === "true" || summary === "1") {
-      const analytics = getVisitorAnalytics();
+      const analytics = await getVisitorAnalytics();
       return NextResponse.json({ success: true, data: analytics }, { status: 200 });
     }
 
     // Default: return raw logs with limit
     const limit = parseInt(searchParams.get("limit") || "100", 10);
-    const allLogs = readVisitorLogs();
+    const allLogs = await readVisitorLogs(Math.min(limit, 1000));
     return NextResponse.json(
       {
         success: true,
         total: allLogs.length,
-        logs: allLogs.slice(0, Math.min(limit, 1000)),
+        logs: allLogs,
       },
       { status: 200 }
     );

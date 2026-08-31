@@ -28,58 +28,145 @@ export interface VisitorAnalyticsSummary {
   devices: { device: string; count: number; percentage: number }[];
   browsers: { browser: string; count: number }[];
   recentVisits: VisitorLogEntry[];
+  storageType: "Upstash Cloud Redis" | "Local File System";
 }
 
 const LOGS_DIR = path.join(process.cwd(), "logs");
 const VISITORS_FILE = path.join(LOGS_DIR, "visitors.json");
 
-// Ensure logs directory and file exist
-export function getVisitorsFilePath(): string {
-  if (!fs.existsSync(LOGS_DIR)) {
-    fs.mkdirSync(LOGS_DIR, { recursive: true });
+// Helper to check if Upstash is configured
+export function getUpstashConfig(): { url: string; token: string } | null {
+  const url = process.env.UPSTASH_REDIS_REST_URL?.trim();
+  const token = process.env.UPSTASH_REDIS_REST_TOKEN?.trim();
+  if (url && token && !url.includes("PLACEHOLDER") && !token.includes("PLACEHOLDER")) {
+    return { url: url.replace(/\/$/, ""), token };
   }
-  if (!fs.existsSync(VISITORS_FILE)) {
-    fs.writeFileSync(VISITORS_FILE, JSON.stringify([], null, 2), "utf8");
+  return null;
+}
+
+// Local filesystem fallback helpers
+function getVisitorsFilePath(): string {
+  try {
+    if (!fs.existsSync(LOGS_DIR)) {
+      fs.mkdirSync(LOGS_DIR, { recursive: true });
+    }
+    if (!fs.existsSync(VISITORS_FILE)) {
+      fs.writeFileSync(VISITORS_FILE, JSON.stringify([], null, 2), "utf8");
+    }
+  } catch {
+    // Ignore in read-only environments
   }
   return VISITORS_FILE;
 }
 
-// Read all visitor logs safely
-export function readVisitorLogs(): VisitorLogEntry[] {
+function readLocalLogs(): VisitorLogEntry[] {
   try {
     const filePath = getVisitorsFilePath();
-    const data = fs.readFileSync(filePath, "utf8");
-    if (!data.trim()) return [];
-    return JSON.parse(data);
+    if (fs.existsSync(filePath)) {
+      const data = fs.readFileSync(filePath, "utf8");
+      if (data.trim()) return JSON.parse(data);
+    }
   } catch (err) {
-    console.error("[VISITOR_LOGGER_READ_ERROR]:", err);
-    return [];
+    console.error("[LOCAL_LOG_READ_ERROR]:", err);
+  }
+  return [];
+}
+
+function logLocal(entry: VisitorLogEntry): void {
+  try {
+    const filePath = getVisitorsFilePath();
+    const logs = readLocalLogs();
+    logs.unshift(entry);
+    const trimmed = logs.slice(0, 10000);
+    fs.writeFileSync(filePath, JSON.stringify(trimmed, null, 2), "utf8");
+  } catch (err) {
+    // Silently handle read-only environments like Vercel Lambda
   }
 }
 
-// Append a single visit entry safely (keeps latest 10,000 entries)
-export function logVisitor(entry: VisitorLogEntry): void {
-  try {
-    const filePath = getVisitorsFilePath();
-    const logs = readVisitorLogs();
-    
-    // Add to beginning for reverse-chronological order
-    logs.unshift(entry);
+// Read visitor logs from Upstash Redis or Local File
+export async function readVisitorLogs(limit = 1000): Promise<VisitorLogEntry[]> {
+  const upstash = getUpstashConfig();
 
-    // Keep max 10,000 to prevent unbounded file growth
-    const trimmed = logs.slice(0, 10000);
+  if (upstash) {
+    try {
+      // LRANGE lumiere:visitors 0 limit-1
+      const res = await fetch(`${upstash.url}/lrange/lumiere:visitors/0/${limit - 1}`, {
+        headers: {
+          Authorization: `Bearer ${upstash.token}`,
+        },
+        cache: "no-store",
+      });
 
-    fs.writeFileSync(filePath, JSON.stringify(trimmed, null, 2), "utf8");
-    console.log(`[VISIT LOGGED]: IP ${entry.ip} -> ${entry.path} (${entry.device}/${entry.browser}) at ${entry.timestamp}`);
-  } catch (err) {
-    console.error("[VISITOR_LOGGER_WRITE_ERROR]:", err);
+      if (res.ok) {
+        const json = await res.json();
+        if (Array.isArray(json.result)) {
+          return json.result
+            .map((item: string | object) => {
+              if (typeof item === "string") {
+                try {
+                  return JSON.parse(item);
+                } catch {
+                  return null;
+                }
+              }
+              return item;
+            })
+            .filter(Boolean) as VisitorLogEntry[];
+        }
+      }
+    } catch (upstashErr) {
+      console.error("[UPSTASH_READ_ERROR]:", upstashErr);
+    }
   }
+
+  // Fallback to local files
+  return readLocalLogs();
+}
+
+// Append a single visit entry to Upstash Redis and local disk
+export async function logVisitor(entry: VisitorLogEntry): Promise<void> {
+  const upstash = getUpstashConfig();
+
+  if (upstash) {
+    try {
+      const payloadString = JSON.stringify(entry);
+
+      // 1. LPUSH into Redis list
+      await fetch(`${upstash.url}/lpush/lumiere:visitors`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${upstash.token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify([payloadString]),
+      });
+
+      // 2. LTRIM to keep max 10,000 logs in Redis
+      fetch(`${upstash.url}/ltrim/lumiere:visitors/0/9999`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${upstash.token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify([]),
+      }).catch(() => {});
+
+      console.log(`[UPSTASH LOGGED]: IP ${entry.ip} -> ${entry.path} (${entry.device}/${entry.browser})`);
+      return;
+    } catch (err) {
+      console.error("[UPSTASH_LOG_ERROR]:", err);
+    }
+  }
+
+  // Fallback to local logs
+  logLocal(entry);
 }
 
 // Helper to extract IP from Next.js request headers
 export function extractClientIp(req: Request): string {
   const headers = req.headers;
-  
+
   const cfConnectingIp = headers.get("cf-connecting-ip");
   if (cfConnectingIp) return cfConnectingIp.trim();
 
@@ -98,7 +185,7 @@ export function extractClientIp(req: Request): string {
     if (match && match[1]) return match[1];
   }
 
-  return "127.0.0.1 (Localhost)";
+  return "127.0.0.1";
 }
 
 // Helper to detect Browser, OS, and Device from User Agent
@@ -109,12 +196,10 @@ export function parseUserAgent(uaString: string | null): {
 } {
   const ua = uaString || "";
 
-  // Bot detection
   if (/bot|crawler|spider|crawling|googlebot|bingbot|slurp|duckduckbot|baiduspider|yandexbot/i.test(ua)) {
     return { browser: "Bot/Crawler", os: "Unknown", device: "Bot" };
   }
 
-  // Device detection
   let device: "Mobile" | "Tablet" | "Desktop" | "Unknown" = "Desktop";
   if (/iPad|tablet|PlayBook|Silk|(Android(?!.*Mobile))/i.test(ua)) {
     device = "Tablet";
@@ -122,7 +207,6 @@ export function parseUserAgent(uaString: string | null): {
     device = "Mobile";
   }
 
-  // OS detection
   let os = "Unknown OS";
   if (/windows nt 10/i.test(ua)) os = "Windows 10/11";
   else if (/windows nt 6.3/i.test(ua)) os = "Windows 8.1";
@@ -135,7 +219,6 @@ export function parseUserAgent(uaString: string | null): {
   else if (/linux/i.test(ua)) os = "Linux";
   else if (/cros/i.test(ua)) os = "ChromeOS";
 
-  // Browser detection
   let browser = "Unknown Browser";
   if (/edg/i.test(ua)) browser = "Microsoft Edge";
   else if (/opr|opera/i.test(ua)) browser = "Opera";
@@ -148,13 +231,14 @@ export function parseUserAgent(uaString: string | null): {
 }
 
 // Compute aggregate metrics for the dashboard
-export function getVisitorAnalytics(): VisitorAnalyticsSummary {
-  const logs = readVisitorLogs();
+export async function getVisitorAnalytics(): Promise<VisitorAnalyticsSummary> {
+  const upstash = getUpstashConfig();
+  const logs = await readVisitorLogs(2000);
   const totalPageViews = logs.length;
 
   const uniqueVisitorSet = new Set<string>();
   const todayUniqueSet = new Set<string>();
-  const todayDateStr = new Date().toISOString().split("T")[0]; // YYYY-MM-DD
+  const todayDateStr = new Date().toISOString().split("T")[0];
 
   let todayViews = 0;
   const pageCounts: Record<string, number> = {};
@@ -165,18 +249,16 @@ export function getVisitorAnalytics(): VisitorAnalyticsSummary {
   for (const entry of logs) {
     uniqueVisitorSet.add(entry.visitorId || entry.ip);
 
-    const entryDate = entry.timestamp.split("T")[0];
+    const entryDate = entry.timestamp?.split("T")[0] || "";
     if (entryDate === todayDateStr) {
       todayViews++;
       todayUniqueSet.add(entry.visitorId || entry.ip);
     }
 
-    // Page frequency
     const p = entry.path || "/";
     pageCounts[p] = (pageCounts[p] || 0) + 1;
 
-    // Referrer frequency
-    let ref = entry.referrer || "Direct / Bookmark";
+    let ref = entry.referrer || "Direct";
     if (ref.includes("google.")) ref = "Google Search";
     else if (ref.includes("instagram.com")) ref = "Instagram";
     else if (ref.includes("facebook.com")) ref = "Facebook";
@@ -186,11 +268,9 @@ export function getVisitorAnalytics(): VisitorAnalyticsSummary {
     else if (ref.includes("youtube.com")) ref = "YouTube";
     referrerCounts[ref] = (referrerCounts[ref] || 0) + 1;
 
-    // Device
     const dev = entry.device || "Desktop";
     deviceCounts[dev] = (deviceCounts[dev] || 0) + 1;
 
-    // Browser
     const br = entry.browser || "Other";
     browserCounts[br] = (browserCounts[br] || 0) + 1;
   }
@@ -229,5 +309,6 @@ export function getVisitorAnalytics(): VisitorAnalyticsSummary {
     devices,
     browsers,
     recentVisits: logs.slice(0, 100),
+    storageType: upstash ? "Upstash Cloud Redis" : "Local File System",
   };
 }
