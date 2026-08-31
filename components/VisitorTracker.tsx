@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useRef, Suspense } from "react";
-import { usePathname, useSearchParams } from "next/navigation";
+import { useEffect, useRef } from "react";
+import { usePathname } from "next/navigation";
 
 function getOrSetVisitorId(): string {
   if (typeof window === "undefined") return "";
@@ -31,22 +31,21 @@ function getOrSetSessionId(): string {
   }
 }
 
-function TrackerInner() {
+export default function VisitorTracker() {
   const pathname = usePathname();
-  const searchParams = useSearchParams();
   const lastTrackedRef = useRef<string>("");
 
   useEffect(() => {
     if (typeof window === "undefined") return;
 
-    const queryString = searchParams?.toString() ? `?${searchParams.toString()}` : "";
-    const fullPath = (pathname || "/") + queryString;
-
-    // Prevent duplicate triggers for the same path in immediate succession
-    if (lastTrackedRef.current === fullPath) return;
-    lastTrackedRef.current = fullPath;
-
     try {
+      const search = window.location.search || "";
+      const fullPath = (pathname || "/") + search;
+
+      // Prevent duplicate triggers for the same path in immediate succession
+      if (lastTrackedRef.current === fullPath) return;
+      lastTrackedRef.current = fullPath;
+
       const visitorId = getOrSetVisitorId();
       const sessionId = getOrSetSessionId();
       const referrer = document.referrer || "Direct";
@@ -56,7 +55,7 @@ function TrackerInner() {
       try {
         timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
       } catch {
-        // Ignore fallback
+        // Fallback
       }
 
       const payload = {
@@ -71,36 +70,28 @@ function TrackerInner() {
 
       const dataString = JSON.stringify(payload);
 
-      // Attempt sendBeacon first for maximum background reliability
       let beaconSent = false;
       if (navigator.sendBeacon) {
-        const blob = new Blob([dataString], { type: "application/json" });
-        beaconSent = navigator.sendBeacon("/api/track", blob);
+        try {
+          const blob = new Blob([dataString], { type: "application/json" });
+          beaconSent = navigator.sendBeacon("/api/track", blob);
+        } catch {
+          beaconSent = false;
+        }
       }
 
-      // Fallback to fetch with keepalive if beacon failed or is unsupported
       if (!beaconSent) {
         fetch("/api/track", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: dataString,
           keepalive: true,
-        }).catch(() => {
-          // Silent swallow - visitor tracking never disrupts UX
-        });
+        }).catch(() => {});
       }
     } catch {
-      // Completely silent failover
+      // Completely swallow client tracking errors
     }
-  }, [pathname, searchParams]);
+  }, [pathname]);
 
   return null;
-}
-
-export default function VisitorTracker() {
-  return (
-    <Suspense fallback={null}>
-      <TrackerInner />
-    </Suspense>
-  );
 }
