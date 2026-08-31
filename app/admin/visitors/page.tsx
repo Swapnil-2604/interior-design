@@ -7,6 +7,7 @@ import { VisitorAnalyticsSummary, VisitorLogEntry } from "@/lib/visitor-logger";
 export default function VisitorAnalyticsPage() {
   const [data, setData] = useState<VisitorAnalyticsSummary | null>(null);
   const [loading, setLoading] = useState(true);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [deviceFilter, setDeviceFilter] = useState("all");
   const [autoRefresh, setAutoRefresh] = useState(true);
@@ -15,15 +16,21 @@ export default function VisitorAnalyticsPage() {
 
   const fetchAnalytics = async () => {
     try {
+      setErrorMsg(null);
       const res = await fetch("/api/track?summary=true");
       if (res.ok) {
         const json = await res.json();
-        if (json.success) {
+        if (json.success && json.data) {
           setData(json.data);
+        } else {
+          setErrorMsg(json.error || "Failed to load telemetry");
         }
+      } else {
+        setErrorMsg(`API error: ${res.status}`);
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error("Failed to fetch analytics", err);
+      setErrorMsg(err?.message || "Network error loading analytics");
     } finally {
       setLoading(false);
     }
@@ -43,22 +50,37 @@ export default function VisitorAnalyticsPage() {
     return () => clearInterval(interval);
   }, [autoRefresh]);
 
-  const filteredLogs = (data?.recentVisits || []).filter((entry) => {
-    const matchesSearch =
-      entry.ip.toLowerCase().includes(search.toLowerCase()) ||
-      entry.path.toLowerCase().includes(search.toLowerCase()) ||
-      entry.browser.toLowerCase().includes(search.toLowerCase()) ||
-      entry.os.toLowerCase().includes(search.toLowerCase()) ||
-      (entry.referrer && entry.referrer.toLowerCase().includes(search.toLowerCase())) ||
-      (entry.visitorId && entry.visitorId.toLowerCase().includes(search.toLowerCase()));
+  const rawLogs: VisitorLogEntry[] = Array.isArray(data?.recentVisits) ? data.recentVisits : [];
 
-    const matchesDevice = deviceFilter === "all" || entry.device.toLowerCase() === deviceFilter.toLowerCase();
+  const filteredLogs = rawLogs.filter((entry) => {
+    if (!entry || typeof entry !== "object") return false;
+
+    const ip = (entry.ip || "").toLowerCase();
+    const path = (entry.path || "").toLowerCase();
+    const browser = (entry.browser || "").toLowerCase();
+    const os = (entry.os || "").toLowerCase();
+    const referrer = (entry.referrer || "").toLowerCase();
+    const visitorId = (entry.visitorId || "").toLowerCase();
+    const query = search.toLowerCase();
+
+    const matchesSearch =
+      ip.includes(query) ||
+      path.includes(query) ||
+      browser.includes(query) ||
+      os.includes(query) ||
+      referrer.includes(query) ||
+      visitorId.includes(query);
+
+    const device = (entry.device || "desktop").toLowerCase();
+    const matchesDevice = deviceFilter === "all" || device === deviceFilter.toLowerCase();
     return matchesSearch && matchesDevice;
   });
 
-  const formatTimestamp = (ts: string) => {
+  const formatTimestamp = (ts?: string) => {
+    if (!ts) return { date: "Just now", time: "" };
     try {
       const d = new Date(ts);
+      if (isNaN(d.getTime())) return { date: ts, time: "" };
       return {
         date: d.toLocaleDateString("en-IN", { month: "short", day: "numeric", year: "numeric" }),
         time: d.toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: true }),
@@ -75,11 +97,11 @@ export default function VisitorAnalyticsPage() {
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 border-b border-[#2a2622] pb-8">
           <div>
-            <div className="flex items-center gap-3 mb-2">
+            <div className="flex items-center gap-3 mb-2 flex-wrap">
               <span className="inline-block w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
               <span className="text-xs uppercase tracking-widest text-[#c5a880] font-mono">Live Telemetry & Logs</span>
-              <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-[#1f1b17] border border-[#332c25] text-[#b0a597]">
-                {data?.storageType || "Connecting..."}
+              <span className="text-[10px] font-mono px-2.5 py-0.5 rounded-full bg-[#1f1b17] border border-[#332c25] text-emerald-400 font-semibold">
+                ● {data?.storageType || (loading ? "Connecting..." : "Live Cloud Storage")}
               </span>
             </div>
             <h1 className="text-3xl sm:text-4xl font-serif tracking-tight text-[#fdfbf7]">
@@ -130,12 +152,21 @@ export default function VisitorAnalyticsPage() {
           </div>
         </div>
 
+        {errorMsg && (
+          <div className="bg-red-950/30 border border-red-800/50 p-4 rounded-lg text-xs font-mono text-red-300 flex items-center justify-between">
+            <span>Notice: {errorMsg}</span>
+            <button onClick={() => fetchAnalytics()} className="underline hover:text-white ml-4">
+              Try Again
+            </button>
+          </div>
+        )}
+
         {/* Stats Grid */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
           <div className="bg-[#141210] border border-[#26221d] p-5 rounded-lg">
             <span className="text-xs uppercase font-mono tracking-wider text-[#918577]">Total Page Views</span>
             <div className="text-3xl sm:text-4xl font-serif text-[#fdfbf7] mt-2">
-              {loading && !data ? "..." : data?.totalPageViews || 0}
+              {loading && !data ? "..." : data?.totalPageViews ?? 0}
             </div>
             <div className="text-xs text-[#70665b] mt-1">All logged visits</div>
           </div>
@@ -143,7 +174,7 @@ export default function VisitorAnalyticsPage() {
           <div className="bg-[#141210] border border-[#26221d] p-5 rounded-lg">
             <span className="text-xs uppercase font-mono tracking-wider text-[#c5a880]">Unique Visitors</span>
             <div className="text-3xl sm:text-4xl font-serif text-[#c5a880] mt-2">
-              {loading && !data ? "..." : data?.uniqueVisitors || 0}
+              {loading && !data ? "..." : data?.uniqueVisitors ?? 0}
             </div>
             <div className="text-xs text-[#70665b] mt-1">Unique IP / Browser IDs</div>
           </div>
@@ -151,9 +182,9 @@ export default function VisitorAnalyticsPage() {
           <div className="bg-[#141210] border border-[#26221d] p-5 rounded-lg">
             <span className="text-xs uppercase font-mono tracking-wider text-emerald-400">Visits Today</span>
             <div className="text-3xl sm:text-4xl font-serif text-emerald-400 mt-2">
-              {loading && !data ? "..." : data?.todayViews || 0}
+              {loading && !data ? "..." : data?.todayViews ?? 0}
             </div>
-            <div className="text-xs text-[#70665b] mt-1">{data?.todayUniques || 0} unique today</div>
+            <div className="text-xs text-[#70665b] mt-1">{data?.todayUniques ?? 0} unique today</div>
           </div>
 
           <div className="bg-[#141210] border border-[#26221d] p-5 rounded-lg">
@@ -162,7 +193,7 @@ export default function VisitorAnalyticsPage() {
               {loading && !data ? "..." : data?.topReferrers?.[0]?.referrer || "Direct"}
             </div>
             <div className="text-xs text-[#70665b] mt-1">
-              {data?.topReferrers?.[0]?.count ? `${data.topReferrers[0].count} hits` : "No referrers yet"}
+              {data?.topReferrers?.[0]?.count ? `${data.topReferrers[0].count} hits` : "Direct / Search"}
             </div>
           </div>
         </div>
@@ -177,10 +208,10 @@ export default function VisitorAnalyticsPage() {
                 <span className="text-xs font-mono text-[#8a7f72]">Ranked by views</span>
               </h3>
               <div className="space-y-3">
-                {data.topPages.length === 0 ? (
+                {(data.topPages || []).length === 0 ? (
                   <p className="text-xs text-[#70665b] italic">No page data recorded yet.</p>
                 ) : (
-                  data.topPages.map((page, idx) => (
+                  (data.topPages || []).map((page, idx) => (
                     <div key={idx} className="flex items-center justify-between text-xs py-1.5 border-b border-[#1f1b17] last:border-0">
                       <span className="font-mono text-[#c5a880] truncate max-w-[70%]">{page.path}</span>
                       <span className="bg-[#1e1a16] text-[#e0d6c9] px-2.5 py-1 rounded font-mono font-medium">
@@ -197,7 +228,7 @@ export default function VisitorAnalyticsPage() {
               <div>
                 <h3 className="text-base font-serif text-[#fdfbf7] mb-3">Device Breakdown</h3>
                 <div className="space-y-2.5">
-                  {data.devices.map((d, i) => (
+                  {(data.devices || []).map((d, i) => (
                     <div key={i}>
                       <div className="flex justify-between text-xs font-mono mb-1">
                         <span className="text-[#a3988c]">{d.device}</span>
@@ -217,7 +248,7 @@ export default function VisitorAnalyticsPage() {
               <div>
                 <h3 className="text-base font-serif text-[#fdfbf7] mb-3">Top Browsers</h3>
                 <div className="space-y-1.5">
-                  {data.browsers.map((b, i) => (
+                  {(data.browsers || []).map((b, i) => (
                     <div key={i} className="flex justify-between text-xs font-mono py-1 border-b border-[#1f1b17] last:border-0">
                       <span className="text-[#a3988c]">{b.browser}</span>
                       <span className="text-[#e0d6c9]">{b.count}</span>
@@ -279,43 +310,50 @@ export default function VisitorAnalyticsPage() {
                 {loading && !data ? (
                   <tr>
                     <td colSpan={7} className="py-12 text-center text-[#6e6459]">
-                      Loading logs...
+                      Loading telemetry logs...
                     </td>
                   </tr>
                 ) : filteredLogs.length === 0 ? (
                   <tr>
                     <td colSpan={7} className="py-12 text-center text-[#6e6459]">
-                      No visitor records matching your filter.
+                      No visitor records recorded yet.
                     </td>
                   </tr>
                 ) : (
-                  filteredLogs.map((entry) => {
+                  filteredLogs.map((entry, idx) => {
                     const { date, time } = formatTimestamp(entry.timestamp);
+                    const ip = entry.ip || "127.0.0.1";
+                    const path = entry.path || "/";
+                    const device = entry.device || "Desktop";
+                    const os = entry.os || "Unknown";
+                    const browser = entry.browser || "Unknown";
+                    const referrer = entry.referrer || "Direct";
+
                     return (
-                      <tr key={entry.id} className="hover:bg-[#191613] transition group">
+                      <tr key={entry.id || idx} className="hover:bg-[#191613] transition group">
                         <td className="py-3 px-4 whitespace-nowrap">
                           <div className="text-[#e0d6c9]">{time}</div>
                           <div className="text-[10px] text-[#6b6257]">{date}</div>
                         </td>
                         <td className="py-3 px-4 whitespace-nowrap">
                           <span className="font-semibold text-emerald-400 bg-emerald-950/30 px-2 py-0.5 rounded border border-emerald-900/40">
-                            {entry.ip}
+                            {ip}
                           </span>
                         </td>
                         <td className="py-3 px-4">
                           <span className="text-[#c5a880] font-medium bg-[#1e1a16] px-2 py-0.5 rounded">
-                            {entry.path}
+                            {path}
                           </span>
                         </td>
                         <td className="py-3 px-4 whitespace-nowrap">
-                          <div className="text-[#ded6cb]">{entry.device}</div>
-                          <div className="text-[10px] text-[#736a5f]">{entry.os}</div>
+                          <div className="text-[#ded6cb]">{device}</div>
+                          <div className="text-[10px] text-[#736a5f]">{os}</div>
                         </td>
                         <td className="py-3 px-4 whitespace-nowrap text-[#b0a597]">
-                          {entry.browser}
+                          {browser}
                         </td>
-                        <td className="py-3 px-4 max-w-xs truncate text-[#8c8173]" title={entry.referrer}>
-                          {entry.referrer || "Direct"}
+                        <td className="py-3 px-4 max-w-xs truncate text-[#8c8173]" title={referrer}>
+                          {referrer}
                         </td>
                         <td className="py-3 px-4 text-right whitespace-nowrap">
                           <button
@@ -351,15 +389,15 @@ export default function VisitorAnalyticsPage() {
               <div className="grid grid-cols-2 gap-4 font-mono text-xs">
                 <div>
                   <span className="text-[#786e62] block">IP Address:</span>
-                  <span className="text-emerald-400 font-semibold text-sm">{selectedEntry.ip}</span>
+                  <span className="text-emerald-400 font-semibold text-sm">{selectedEntry.ip || "Unknown"}</span>
                 </div>
                 <div>
                   <span className="text-[#786e62] block">Timestamp:</span>
-                  <span className="text-[#f4efe6]">{selectedEntry.timestamp}</span>
+                  <span className="text-[#f4efe6]">{selectedEntry.timestamp || "Unknown"}</span>
                 </div>
                 <div>
                   <span className="text-[#786e62] block">Path Visited:</span>
-                  <span className="text-[#c5a880] font-semibold">{selectedEntry.path}</span>
+                  <span className="text-[#c5a880] font-semibold">{selectedEntry.path || "/"}</span>
                 </div>
                 <div>
                   <span className="text-[#786e62] block">Referrer:</span>
@@ -367,11 +405,11 @@ export default function VisitorAnalyticsPage() {
                 </div>
                 <div>
                   <span className="text-[#786e62] block">Device / OS:</span>
-                  <span className="text-[#f4efe6]">{selectedEntry.device} ({selectedEntry.os})</span>
+                  <span className="text-[#f4efe6]">{selectedEntry.device || "Unknown"} ({selectedEntry.os || "Unknown"})</span>
                 </div>
                 <div>
                   <span className="text-[#786e62] block">Browser:</span>
-                  <span className="text-[#f4efe6]">{selectedEntry.browser}</span>
+                  <span className="text-[#f4efe6]">{selectedEntry.browser || "Unknown"}</span>
                 </div>
                 <div>
                   <span className="text-[#786e62] block">Screen Resolution:</span>
@@ -379,16 +417,16 @@ export default function VisitorAnalyticsPage() {
                 </div>
                 <div>
                   <span className="text-[#786e62] block">Language / Timezone:</span>
-                  <span className="text-[#f4efe6]">{selectedEntry.language} / {selectedEntry.timeZone}</span>
+                  <span className="text-[#f4efe6]">{selectedEntry.language || "Unknown"} / {selectedEntry.timeZone || "Unknown"}</span>
                 </div>
                 <div className="col-span-2">
                   <span className="text-[#786e62] block">Visitor UUID:</span>
-                  <span className="text-[#968c7e] text-[11px] break-all">{selectedEntry.visitorId}</span>
+                  <span className="text-[#968c7e] text-[11px] break-all">{selectedEntry.visitorId || "Unknown"}</span>
                 </div>
                 <div className="col-span-2">
                   <span className="text-[#786e62] block">User-Agent:</span>
                   <span className="text-[#968c7e] text-[10px] break-all bg-[#0e0d0c] p-2 rounded block mt-1">
-                    {selectedEntry.userAgent}
+                    {selectedEntry.userAgent || "None"}
                   </span>
                 </div>
               </div>

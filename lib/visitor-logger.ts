@@ -102,15 +102,30 @@ export async function readVisitorLogs(limit = 1000): Promise<VisitorLogEntry[]> 
         const json = await res.json();
         if (Array.isArray(json.result)) {
           return json.result
-            .map((item: string | object) => {
+            .map((rawItem: any) => {
+              let item = rawItem;
+              // If item is wrapped in an array, unwrap it recursively
+              while (Array.isArray(item)) {
+                item = item[0];
+              }
               if (typeof item === "string") {
                 try {
-                  return JSON.parse(item);
+                  item = JSON.parse(item);
                 } catch {
                   return null;
                 }
               }
-              return item;
+              if (typeof item === "string") {
+                try {
+                  item = JSON.parse(item);
+                } catch {
+                  // Ignore
+                }
+              }
+              if (item && typeof item === "object" && (item.ip || item.path || item.visitorId)) {
+                return item as VisitorLogEntry;
+              }
+              return null;
             })
             .filter(Boolean) as VisitorLogEntry[];
         }
