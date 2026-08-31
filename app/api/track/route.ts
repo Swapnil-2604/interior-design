@@ -12,7 +12,10 @@ export async function POST(req: Request) {
   try {
     let body: any = {};
     try {
-      body = await req.json();
+      const rawText = await req.text();
+      if (rawText && rawText.trim()) {
+        body = JSON.parse(rawText);
+      }
     } catch {
       body = {};
     }
