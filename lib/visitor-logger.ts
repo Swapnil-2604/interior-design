@@ -148,23 +148,23 @@ export async function logVisitor(entry: VisitorLogEntry): Promise<void> {
       const payloadString = JSON.stringify(entry);
 
       // 1. LPUSH into Redis list
-      await fetch(`${upstash.url}/lpush/lumiere:visitors`, {
+      await fetch(upstash.url, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${upstash.token}`,
           "Content-Type": "application/json",
         },
-        body: JSON.stringify([payloadString]),
+        body: JSON.stringify(["LPUSH", "lumiere:visitors", payloadString]),
       });
 
       // 2. LTRIM to keep max 10,000 logs in Redis
-      fetch(`${upstash.url}/ltrim/lumiere:visitors/0/9999`, {
+      fetch(upstash.url, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${upstash.token}`,
           "Content-Type": "application/json",
         },
-        body: JSON.stringify([]),
+        body: JSON.stringify(["LTRIM", "lumiere:visitors", "0", "9999"]),
       }).catch(() => {});
 
       console.log(`[UPSTASH LOGGED]: IP ${entry.ip} -> ${entry.path} (${entry.device}/${entry.browser})`);
